@@ -1,0 +1,61 @@
+api_version: 1
+
+robot:
+  id: r1pro-fake-02
+  display_name: R1 Pro Fake 02
+  model: r1pro
+  backend: fake
+  sdk:
+    package: semantic-robot-sdk-r1pro
+    backend_profile: fake-v1
+    firmware_profile: fake-v1
+    providers:
+      kinematics: fake
+      motion: local
+      navigation: local
+    options:
+      auto_complete: true
+      stop_confirmed: true
+      initial_grasp_targets:
+        left:
+          object_id: object://pallet-a/box-17
+          contact_opening_m: 0.04
+          contact_force_n: 18.0
+          minimum_holding_force_n: 2.0
+  frames:
+    world: world
+    base: base_link
+    end_effector: gripper_link
+  safety:
+    maximum_base_speed: 0.4
+    maximum_joint_speed: 0.5
+
+ability_framework:
+  endpoint: http://127.0.0.1:18082
+  managed_by_instance: true
+
+abilities:
+  navigation: {}
+  manipulator_motion: {}
+  end_effector: {}
+  robot_state: {}
+  sensor_capture: {}
+  object_perception: {}
+  grasp_planning: {}
+
+pilot:
+  id: pilot-r1pro-fake-02
+  heartbeat_interval_seconds: 2
+  worker_timeout_seconds: 30
+  allow_ability_debug: true
+
+robot_skills:
+  - name: grasp-object
+    version: 0.1.0
+    enabled: true
+  - name: semantic-navigation
+    version: 0.1.0
+    enabled: true
+  - name: place-object
+    version: 0.1.0
+    enabled: true

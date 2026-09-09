@@ -1,0 +1,64 @@
+api_version: 1
+robot:
+  id: {{ quote .Instance.Spec.Robot.ID }}
+  display_name: {{ quote .Instance.Spec.Robot.DisplayName }}
+  model: {{ quote .Instance.Spec.Robot.Model }}
+  backend: {{ quote .Instance.Spec.Robot.Backend }}
+  sdk:
+    package: {{ quote .SDKPackage }}
+    firmware_profile: {{ quote .Instance.Spec.Robot.FirmwareProfile }}
+    providers:
+      kinematics: fake
+      motion: local
+      navigation: local
+    options:
+      auto_complete: true
+      stop_confirmed: true
+      state_path: {{ quote .RobotStatePath }}
+      # Fake 没有独立场景 Runtime，类型包用声明式初态提供一次可抓取目标。该内容
+      # 只在 robot-state.sqlite 首次建立时生效，Ability 重启不会重置 Robot。
+      initial_grasp_targets:
+        left:
+          object_id: object://pallet-a/box-17
+          contact_opening_m: 0.04
+          contact_force_n: 18.0
+          minimum_holding_force_n: 2.0
+  frames:
+    world: world
+    base: base_link
+    end_effector: gripper_link
+  safety:
+    maximum_base_speed: 0.4
+    maximum_joint_speed: 0.5
+ability_framework:
+  endpoint: {{ quote .Instance.Spec.AbilityFramework.Endpoint }}
+  managed_by_instance: {{ .Instance.Spec.AbilityFramework.Managed }}
+abilities:
+  navigation: {}
+  manipulator_motion:
+    default_end_effector: left
+  end_effector:
+    default_gripper: left
+    release_opening_m: 0.08
+  robot_state: {}
+  sensor_capture: {}
+  object_perception:
+    model_registry_path: {{ quote .ModelRegistryPath }}
+  grasp_planning:
+    model_registry_path: {{ quote .ModelRegistryPath }}
+pilot:
+  id: {{ quote .Instance.Spec.Pilot.ID }}
+  robot_skill_directory: {{ quote .SkillDirectory }}
+  worker_timeout_seconds: 30
+  heartbeat_interval_seconds: 2
+  allow_ability_debug: true
+robot_skills:
+  - name: grasp-object
+    version: 0.2.0
+    enabled: true
+  - name: semantic-navigation
+    version: 0.2.0
+    enabled: true
+  - name: place-object
+    version: 0.2.0
+    enabled: true

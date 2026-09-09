@@ -1,0 +1,112 @@
+apiVersion: semantic.insightos.cn/v1alpha1
+kind: RobotRuntimeBundle
+metadata:
+  name: r1pro-mujoco
+  version: 0.5.0-dev
+  description: 连接既有 plugin-mujoco HTTP Runtime 的 R1 Pro 运行包
+spec:
+  robot:
+    model: r1_pro_chassis
+    sdkPackage: semantic-robot-sdk-r1pro
+    defaultSDKOptions:
+      timeout_seconds: 15
+      # 实体碰撞网格最大半径约 0.399m，加上 0.05m 栅格半对角的
+      # 离散误差后取 0.44m；过大包络会误迫使携物 Robot 绕边并额外转向。
+      base_footprint_radius_m: 0.44
+      navigation_resolution_m: 0.05
+      # 作业距离按目标外表面到基座中心计算。0.48m 比 0.44m 基座包络多
+      # 约4cm，同时避免停在远处后再用双臂把箱体大幅拉向机身。
+      manipulation_work_distance_m: 0.48
+      joint_position_tolerance_rad: 0.009
+      fixed_end_effector_position_tolerance_m: 0.005
+      fixed_end_effector_orientation_tolerance_rad: 0.02
+    backendProfiles:
+      - backend: mujoco
+        profile: r1pro-tote-mujoco-v1
+  platform:
+    os: linux
+  artifacts:
+    instanceLauncher: bin/semantic-robot-instance
+    abilityFramework: bin/AbilityFramework
+    pilot: bin/semantic-pilot
+    robotSkillSDK: wheels/semantic_robot_skill_sdk-0.1.0.dev0-py3-none-any.whl
+    pythonExecutable: python/venv/bin/python
+    pythonWheels:
+      - wheels/ability_py-0.4.0-py3-none-any.whl
+      - wheels/semantic_robot_sdk_core-0.5.0.dev0-py3-none-any.whl
+      - wheels/semantic_robot_sdk_r1pro-0.5.0.dev0-py3-none-any.whl
+      - wheels/semantic_r1pro_abilities-0.4.0.dev1-py3-none-any.whl
+      - wheels/semantic_robot_skill_sdk-0.1.0.dev0-py3-none-any.whl
+      - wheels/websockets-17.0.1-cp313-cp313-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl
+      - wheels/annotated_types-0.8.0-py3-none-any.whl
+      - wheels/blinker-1.9.0-py3-none-any.whl
+      - wheels/certifi-2026.7.22-py3-none-any.whl
+      - wheels/charset_normalizer-3.5.1-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
+      - wheels/click-8.4.2-py3-none-any.whl
+      - wheels/flask-3.1.3-py3-none-any.whl
+      - wheels/idna-3.18-py3-none-any.whl
+      - wheels/itsdangerous-2.2.0-py3-none-any.whl
+      - wheels/jinja2-3.1.6-py3-none-any.whl
+      - wheels/markupsafe-3.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
+      - wheels/pydantic-2.13.4-py3-none-any.whl
+      - wheels/pydantic_core-2.46.4-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+      - wheels/pyyaml-6.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
+      - wheels/requests-2.34.2-py3-none-any.whl
+      - wheels/typing_extensions-4.16.0-py3-none-any.whl
+      - wheels/typing_inspection-0.4.4-py3-none-any.whl
+      - wheels/urllib3-2.7.0-py3-none-any.whl
+      - wheels/werkzeug-3.1.8-py3-none-any.whl
+      - wheels/cmeel-0.60.1-py3-none-any.whl
+      - wheels/cmeel_assimp-6.0.5-0-py3-none-manylinux_2_28_x86_64.whl
+      - wheels/cmeel_boost-1.89.0-1-cp313-cp313-manylinux_2_28_x86_64.whl
+      - wheels/cmeel_console_bridge-1.0.2.3-0-py3-none-manylinux_2_28_x86_64.whl
+      - wheels/cmeel_octomap-1.10.0-5-py3-none-manylinux_2_28_x86_64.whl
+      - wheels/cmeel_qhull-8.0.2.1-1-py3-none-manylinux_2_28_x86_64.whl
+      - wheels/cmeel_tinyxml2-11.0.0-0-py3-none-manylinux_2_28_x86_64.whl
+      # urdfdom 4 requires soname 9; TinyXML2 11 is not ABI-compatible.
+      - wheels/cmeel_tinyxml2_9-9.0.0-0-py3-none-manylinux_2_28_x86_64.whl
+      - wheels/cmeel_urdfdom-4.0.0-2-py3-none-manylinux_2_28_x86_64.whl
+      - wheels/cmeel_zlib-1.3.2-0-py3-none-manylinux_2_28_x86_64.whl
+      - wheels/coal-3.0.2-1-cp313-cp313-manylinux_2_28_x86_64.whl
+      - wheels/eigenpy-3.12.0-1-cp313-cp313-manylinux_2_28_x86_64.whl
+      - wheels/libcoal-3.0.2-0-py3-none-manylinux_2_28_x86_64.whl
+      - wheels/libpinocchio-3.9.0-1-py3-none-manylinux_2_28_x86_64.whl
+      - wheels/numpy-2.3.5-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+      - wheels/pin-3.9.0-0-cp313-cp313-manylinux_2_28_x86_64.whl
+      - wheels/ruckig-0.19.4-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+    abilities:
+      - role: navigation
+        template: r1pro-navigation
+        abilityName: R1ProNavigation.V2
+        file: abilities/r1pro-navigation.zip
+      - role: manipulator_motion
+        template: r1pro-manipulator-motion
+        abilityName: R1ProManipulatorMotion.V2
+        file: abilities/r1pro-manipulator-motion.zip
+      - role: end_effector
+        template: r1pro-end-effector
+        abilityName: R1ProEndEffector.V2
+        file: abilities/r1pro-end-effector.zip
+      - role: robot_state
+        template: r1pro-robot-state
+        abilityName: R1ProRobotState.V2
+        file: abilities/r1pro-robot-state.zip
+      - role: sensor_capture
+        template: r1pro-sensor-capture
+        abilityName: R1ProSensorCapture.V2
+        file: abilities/r1pro-sensor-capture.zip
+      - role: object_perception
+        template: r1pro-object-perception
+        abilityName: R1ProObjectPerception.V2
+        file: abilities/r1pro-object-perception.zip
+      - role: grasp_planning
+        template: r1pro-grasp-planning
+        abilityName: R1ProGraspPlanning.V2
+        file: abilities/r1pro-grasp-planning.zip
+  templates:
+    robotDeployment: templates/robot-deployment.yaml.tmpl
+    abilityFramework: templates/ability-framework.yaml.tmpl
+    modelRegistry: templates/model-registry.json
+  runtime:
+    readinessTimeout: 45s
+    shutdownTimeout: 15s

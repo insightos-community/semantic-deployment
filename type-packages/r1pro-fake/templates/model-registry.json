@@ -1,0 +1,20 @@
+{
+  "defaults": {
+    "object_perception": "fake-perception-default",
+    "grasp_planning": "fake-grasp-default"
+  },
+  "profiles": {
+    "fake-perception-default": {
+      "ability_role": "object_perception",
+      "provider": "fake",
+      "enabled": true,
+      "settings": {}
+    },
+    "fake-grasp-default": {
+      "ability_role": "grasp_planning",
+      "provider": "fake",
+      "enabled": true,
+      "settings": {}
+    }
+  }
+}

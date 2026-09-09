@@ -1,0 +1,17 @@
+framework_name: {{ quote .Instance.Metadata.Name }}
+http_ip: {{ quote .Instance.Spec.AbilityFramework.ListenAddress }}
+http_port: {{ .AFPort }}
+
+log:
+  glog:
+    color_log: false
+    also_log_to_stderr: true
+    max_log_size: 1024
+    stop_logging_if_full_disk: true
+    log_dir: log
+
+resource_mgr:
+  update_interval: 1
+
+lifecycle_mgr:
+  clear_stale_heartbeats_interval: 10

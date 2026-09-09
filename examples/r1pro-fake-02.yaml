@@ -1,0 +1,23 @@
+apiVersion: semantic.insightos.cn/v1alpha1
+kind: RobotInstance
+metadata:
+  name: r1pro-fake-02
+spec:
+  bundle: /opt/semantic/bundles/r1pro-fake-0.5.0
+  robot:
+    id: r1pro-fake-02
+    displayName: R1 Pro Fake 02
+    model: r1pro
+    backend: fake
+    backendProfile: fake-v1
+    firmwareProfile: fake-v1
+  abilityFramework:
+    endpoint: http://127.0.0.1:18082
+    managed: true
+    listenAddress: 127.0.0.1
+  semanticServer:
+    websocketURL: ws://127.0.0.1:8080/ws/pilot
+    httpURL: http://127.0.0.1:8080
+    accessToken: replace-with-pilot-token
+  pilot:
+    id: pilot-r1pro-fake-02

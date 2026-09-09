@@ -1,0 +1,105 @@
+api_version: 1
+robot:
+  id: r1_pro_tote_gripper-1
+  display_name: R1 Pro Tote Robot 1
+  model: r1_pro_chassis
+  backend: mujoco
+  sdk:
+    package: semantic-robot-sdk-r1pro
+    endpoint: http://127.0.0.1:18090
+    backend_profile: r1pro-tote-mujoco-v1
+    firmware_profile: r1pro-tote-mujoco-v1
+    scene_instance_id: replace-with-running-scene-instance-id
+    providers:
+      kinematics: local
+      motion: local
+      navigation: local
+    options:
+      timeout_seconds: 10
+      base_footprint_radius_m: 0.42
+      navigation_resolution_m: 0.05
+      # 作业距离按目标外表面到基座中心计算；保留基座净空并减少双臂过度前伸。
+      manipulation_work_distance_m: 0.48
+      joint_position_tolerance_rad: 0.009
+      fixed_end_effector_position_tolerance_m: 0.005
+      fixed_end_effector_orientation_tolerance_rad: 0.02
+  frames:
+    world: world
+    base: base_link
+    end_effectors:
+      left: left_tote_load_frame
+      right: right_tote_load_frame
+  tools:
+    - tool_ref: component://tool/left
+      side: left
+      kind: tote_clamp
+      frame: left_tote_load_frame
+      joint: left_tote_clamp_joint
+      travel_m: 0.039
+      normal_force_n: 60
+      maximum_force_n: 120
+    - tool_ref: component://tool/right
+      side: right
+      kind: tote_clamp
+      frame: right_tote_load_frame
+      joint: right_tote_clamp_joint
+      travel_m: 0.039
+      normal_force_n: 60
+      maximum_force_n: 120
+  kinematics:
+    urdf_path: /opt/semantic/assets/robot/r1_pro_tote_gripper/meshes/r1_pro_tote_gripper.urdf
+    package_directories: [/opt/semantic/assets/robot]
+    controlled_joint_groups:
+      left: [torso, left_arm]
+      right: [torso, right_arm]
+    disabled_collision_pairs:
+      - [left_tote_hook, left_tote_clamp]
+      - [right_tote_hook, right_tote_clamp]
+    named_postures:
+      travel:
+        torso_joint1: 0.0
+        torso_joint2: 0.0
+        torso_joint3: 0.0
+        torso_joint4: 0.0
+        left_arm_joint1: 0.0
+        left_arm_joint2: 0.0
+        left_arm_joint3: 0.0
+        left_arm_joint4: 0.0
+        left_arm_joint5: 0.0
+        left_arm_joint6: 0.0
+        left_arm_joint7: 0.0
+        right_arm_joint1: 0.0
+        right_arm_joint2: 0.0
+        right_arm_joint3: 0.0
+        right_arm_joint4: 0.0
+        right_arm_joint5: 0.0
+        right_arm_joint6: 0.0
+        right_arm_joint7: 0.0
+  safety:
+    maximum_base_speed: 0.4
+    maximum_joint_speed: 0.5
+    carrying_motion_scale: 0.5
+ability_framework:
+  endpoint: http://127.0.0.1:18083
+  managed_by_instance: true
+abilities:
+  navigation: {}
+  manipulator_motion: {coordination: synchronized}
+  end_effector:
+    default_tools: [component://tool/left, component://tool/right]
+  robot_state: {}
+  sensor_capture: {}
+  object_perception:
+    model_registry_path: /opt/semantic/model-registry.json
+  grasp_planning:
+    model_registry_path: /opt/semantic/model-registry.json
+    transport_object_offset_base_m: [0.65, 0.0, 0.62]
+pilot:
+  id: pilot-r1_pro_tote_gripper-1
+  worker_timeout_seconds: 30
+  heartbeat_interval_seconds: 2
+  allow_ability_debug: true
+robot_skills:
+  - {name: grasp-object, version: 0.4.23, enabled: true}
+  - {name: semantic-navigation, version: 0.4.7, enabled: true}
+  - {name: place-object, version: 0.4.42, enabled: true}

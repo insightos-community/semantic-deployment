@@ -1,0 +1,106 @@
+api_version: 1
+robot:
+  id: {{ quote .Instance.Spec.Robot.ID }}
+  display_name: {{ quote .Instance.Spec.Robot.DisplayName }}
+  model: {{ quote .Instance.Spec.Robot.Model }}
+  backend: {{ quote .Instance.Spec.Robot.Backend }}
+  sdk:
+    package: {{ quote .SDKPackage }}
+    endpoint: {{ quote .Instance.Spec.Robot.SDKEndpoint }}
+    backend_profile: {{ quote .Instance.Spec.Robot.BackendProfile }}
+    firmware_profile: {{ quote .Instance.Spec.Robot.FirmwareProfile }}
+    scene_instance_id: {{ quote .Instance.Spec.Robot.SceneInstanceID }}
+    providers:
+      kinematics: local
+      motion: local
+      navigation: local
+    options: {{ json .SDKOptions }}
+  frames:
+    world: world
+    base: base_link
+    end_effectors:
+{{- range .Instance.Spec.Robot.Tools }}
+      {{ .Side }}: {{ quote .Frame }}
+{{- end }}
+  tools:
+{{- range .Instance.Spec.Robot.Tools }}
+    - tool_ref: {{ quote .ToolRef }}
+      side: {{ quote .Side }}
+      kind: {{ quote .Kind }}
+      frame: {{ quote .Frame }}
+      joint: {{ quote .Joint }}
+      travel_m: {{ .TravelM }}
+      normal_force_n: {{ .NormalForceN }}
+      maximum_force_n: {{ .MaximumForceN }}
+{{- end }}
+  kinematics:
+    urdf_path: {{ quote .Instance.Spec.Robot.URDFPath }}
+    package_directories: {{ json .Instance.Spec.Robot.PackageDirectories }}
+    controlled_joint_groups:
+      left: [torso, left_arm]
+      right: [torso, right_arm]
+    disabled_collision_pairs:
+      - [left_tote_hook, left_tote_clamp]
+      - [right_tote_hook, right_tote_clamp]
+    named_postures:
+      travel:
+        torso_joint1: 0.0
+        torso_joint2: 0.0
+        torso_joint3: 0.0
+        torso_joint4: 0.0
+        left_arm_joint1: 0.0
+        left_arm_joint2: 0.0
+        left_arm_joint3: 0.0
+        left_arm_joint4: 0.0
+        left_arm_joint5: 0.0
+        left_arm_joint6: 0.0
+        left_arm_joint7: 0.0
+        right_arm_joint1: 0.0
+        right_arm_joint2: 0.0
+        right_arm_joint3: 0.0
+        right_arm_joint4: 0.0
+        right_arm_joint5: 0.0
+        right_arm_joint6: 0.0
+        right_arm_joint7: 0.0
+  safety:
+    maximum_base_speed: 0.4
+    maximum_joint_speed: 0.5
+    # 携物直线速度仍以 Action 请求的 0.05m/s 为上限；该比例主要收紧
+    # 转向和起停动态，避免大箱体在到位转向时将双臂扭离稳定承载姿态。
+    carrying_motion_scale: 0.25
+ability_framework:
+  endpoint: {{ quote .Instance.Spec.AbilityFramework.Endpoint }}
+  managed_by_instance: {{ .Instance.Spec.AbilityFramework.Managed }}
+abilities:
+  navigation: {}
+  manipulator_motion:
+    coordination: synchronized
+  end_effector:
+    default_tools:
+      - component://tool/left
+      - component://tool/right
+  robot_state: {}
+  sensor_capture: {}
+  object_perception:
+    model_registry_path: {{ quote .ModelRegistryPath }}
+  grasp_planning:
+    model_registry_path: {{ quote .ModelRegistryPath }}
+    # 这是R1 Pro双侧夹具的可连续搬运工作距离，不是某个场景的固定Pose。
+    # Ability仍按实时箱体尺寸、抓取关系和邻物几何计算最终双末端目标。
+    transport_object_offset_base_m: [0.65, 0.0, 0.62]
+pilot:
+  id: {{ quote .Instance.Spec.Pilot.ID }}
+  robot_skill_directory: {{ quote .SkillDirectory }}
+  worker_timeout_seconds: 30
+  heartbeat_interval_seconds: 2
+  allow_ability_debug: true
+robot_skills:
+  - name: grasp-object
+    version: 0.4.23
+    enabled: true
+  - name: semantic-navigation
+    version: 0.4.7
+    enabled: true
+  - name: place-object
+    version: 0.4.42
+    enabled: true
