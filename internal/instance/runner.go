@@ -91,15 +91,35 @@ func (process *managedProcess) terminate(timeout time.Duration, requireCleanExit
 	if process == nil || process.cmd.Process == nil {
 		return false, nil
 	}
-	_ = process.cmd.Process.Signal(syscall.SIGTERM)
+	// startProcess creates a dedicated process group. After the caller has
+	// completed Pilot hold and Ability stop, retire the whole owned group:
+	// macOS has no Linux PR_SET_PDEATHSIG to reap Ability Python children.
+	deadline := time.Now().Add(timeout)
+	group := -process.cmd.Process.Pid
+	if err := syscall.Kill(group, syscall.SIGTERM); err != nil && !errors.Is(err, syscall.ESRCH) {
+		return false, fmt.Errorf("终止 %s 进程组: %w", process.name, err)
+	}
 	select {
 	case err := <-process.done:
 		if requireCleanExit && err != nil {
 			return false, fmt.Errorf("%s 安全停止返回非零状态: %w", process.name, err)
 		}
-		return err == nil, nil
+		for {
+			groupErr := syscall.Kill(group, 0)
+			if errors.Is(groupErr, syscall.ESRCH) {
+				return err == nil, nil
+			}
+			if groupErr != nil {
+				return false, fmt.Errorf("检查 %s 子进程组: %w", process.name, groupErr)
+			}
+			if time.Now().After(deadline) {
+				_ = syscall.Kill(group, syscall.SIGKILL)
+				return false, fmt.Errorf("%s 子进程未在 %s 内退出", process.name, timeout)
+			}
+			time.Sleep(10 * time.Millisecond)
+		}
 	case <-time.After(timeout):
-		_ = process.cmd.Process.Kill()
+		_ = syscall.Kill(group, syscall.SIGKILL)
 		<-process.done
 		return false, fmt.Errorf("%s 未在 %s 内安全退出，已强制终止", process.name, timeout)
 	}
@@ -261,6 +281,13 @@ func Run(ctx context.Context, instanceDirectory string) (runErr error) {
 			} else {
 				evidence.AbilityStopConfirmed++
 			}
+		}
+		if len(failures) > 0 {
+			// Keep the framework available for reconciliation when Ability stop
+			// has not been confirmed; group termination requires that evidence.
+			state.StopEvidence = &evidence
+			_ = writeState(instanceDirectory, &state)
+			return fmt.Errorf("%w: %s", errSafetyUnconfirmed, strings.Join(failures, "; "))
 		}
 		if _, err := frameworkProcess.terminate(opened.Manifest.ShutdownTimeout(), false); err != nil {
 			failures = append(failures, err.Error())
