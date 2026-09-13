@@ -1,0 +1,32 @@
+name: Native macOS
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
+        with:
+          go-version: 1.25.8
+      - name: Build and test native deployment tools
+        run: |
+          test "$(uname -m)" = arm64
+          go test ./... -count=1 -timeout=5m
+          mkdir -p dist/bin
+          for name in semantic-robot-instance semantic-robot-bundle; do
+            CGO_ENABLED=0 go build -trimpath -o "dist/bin/$name" "./cmd/$name"
+          done
+          tar -czf dist/semantic-deployment-macos-arm64.tar.gz -C dist/bin .
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: semantic-deployment-macos-arm64
+          path: dist/*.tar.gz
+          if-no-files-found: error
