@@ -376,6 +376,10 @@ func runAbilityFrameworkHelper(t *testing.T) {
 		mutex.Lock()
 		defer mutex.Unlock()
 		if request.Method == http.MethodDelete && strings.HasPrefix(request.URL.Path, "/api/instance/") {
+			if os.Getenv("SEMANTIC_TEST_ABILITY_STOP_FAIL") == "1" {
+				http.Error(writer, "stop unconfirmed", http.StatusServiceUnavailable)
+				return
+			}
 			identifier := strings.TrimPrefix(request.URL.Path, "/api/instance/")
 			for name, value := range instances {
 				if value.InstanceID == identifier {
@@ -520,4 +524,80 @@ func environmentContains(values []string, expected string) bool {
 		}
 	}
 	return false
+}
+
+func TestTerminateRetiresOwnedDescendantsWithoutSignalingOtherGroups(t *testing.T) {
+	directory := t.TempDir()
+	unrelated, err := startProcess("unrelated", "/bin/sleep", []string{"60"}, directory,
+		filepath.Join(directory, "unrelated.log"), os.Environ())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer unrelated.terminate(2*time.Second, false)
+	script := `sleep 60 &
+child=$!
+echo "$child" > child.pid
+trap 'wait "$child"; exit 0' TERM
+wait "$child"
+`
+	process, err := startProcess("framework", "/bin/sh", []string{"-c", script}, directory,
+		filepath.Join(directory, "framework.log"), os.Environ())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer syscall.Kill(-process.cmd.Process.Pid, syscall.SIGKILL)
+	deadline := time.Now().Add(2 * time.Second)
+	var child int
+	for time.Now().Before(deadline) {
+		content, err := os.ReadFile(filepath.Join(directory, "child.pid"))
+		if err == nil {
+			child, _ = strconv.Atoi(strings.TrimSpace(string(content)))
+			if child > 0 {
+				break
+			}
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	if child == 0 {
+		t.Fatal("child did not start")
+	}
+	if _, err := process.terminate(2*time.Second, false); err != nil {
+		t.Fatal(err)
+	}
+	if err := syscall.Kill(child, 0); !errors.Is(err, syscall.ESRCH) {
+		t.Fatalf("child remains after termination: %v", err)
+	}
+	if err := syscall.Kill(unrelated.cmd.Process.Pid, 0); err != nil {
+		t.Fatalf("unrelated group was signaled: %v", err)
+	}
+}
+
+func TestUnconfirmedAbilityStopKeepsFrameworkGroupForReconciliation(t *testing.T) {
+	t.Setenv("SEMANTIC_TEST_ABILITY_STOP_FAIL", "1")
+	bundleDirectory := createTestBundle(t)
+	directory := filepath.Join(t.TempDir(), "robot-unconfirmed")
+	if _, err := Render(writeTestInstanceConfig(t, bundleDirectory, "robot-unconfirmed", freePort(t)), directory); err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	done := make(chan error, 1)
+	go func() { done <- Run(ctx, directory) }()
+	waitForStatus(t, directory, StatusRunning)
+	running, _ := ReadState(directory)
+	defer syscall.Kill(-running.AbilityFrameworkPID, syscall.SIGKILL)
+	cancel()
+	if err := waitRun(t, done); !errors.Is(err, errSafetyUnconfirmed) {
+		t.Fatalf("expected unconfirmed safety: %v", err)
+	}
+	state, err := ReadState(directory)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if state.Status != StatusInterrupted || state.StopEvidence.AbilityStopConfirmed != 0 {
+		t.Fatalf("unexpected state: %+v", state)
+	}
+	if !processAlive(running.AbilityFrameworkPID) {
+		t.Fatal("framework killed before Ability stop was confirmed")
+	}
 }
