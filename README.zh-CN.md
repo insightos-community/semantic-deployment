@@ -50,3 +50,21 @@ Copyright 2026 InsightOS。自有代码采用 [Apache-2.0](LICENSE)；第三方�
 ## 三个平台的构建复现
 
 参见 [glibc、musl 与 macOS 构建说明](README.build.md)：包含已锁定的源码版本、实际脚本入口、工具要求、本地与 CI 指令、产物位置和平台验证范围。
+
+## Windows ports（推进中）
+
+supervisor 与 debug stack 的实例锁已接入 `internal/ports/filelock`：
+Linux/macOS 使用 `flock`，Windows 使用非阻塞 `LockFileEx`。
+[原生 ports CI](.github/workflows/platform-ports.yml) 在三个平台测试不同句柄、
+不同进程之间的互斥，以及解锁、关闭和强制结束进程后的恢复，包含中文及空格路径。
+
+安装 Go 1.25.8 后，在 Linux、macOS 或 Windows 中执行：
+
+```text
+go test ./internal/ports/... -count=1 -timeout=2m
+```
+
+当前验证范围仅为实例锁 adapter。完整 Windows supervisor 仍需进程树归属、
+正常停止 IPC 和进程身份适配，尚无 Windows 可执行文件 release。
+Linux/macOS 原有启动与停止证据流程继续由 `go test ./...` 回归。
+正常退出会先显式解锁再关闭文件；异常退出后的系统锁清理可能存在短暂延迟。

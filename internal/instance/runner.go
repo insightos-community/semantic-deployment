@@ -32,6 +32,7 @@ import (
 
 	"insightos.cn/semantic-robot-deployment/internal/abilityframework"
 	"insightos.cn/semantic-robot-deployment/internal/bundle"
+	"insightos.cn/semantic-robot-deployment/internal/ports/filelock"
 )
 
 type managedProcess struct {
@@ -183,10 +184,13 @@ func Run(ctx context.Context, instanceDirectory string) (runErr error) {
 		return err
 	}
 	defer lockFile.Close()
-	if err := syscall.Flock(int(lockFile.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
-		return errors.New("实例已由另一个 semantic-robot-instance 进程管理")
+	if err := filelock.TryLock(lockFile); err != nil {
+		if errors.Is(err, filelock.ErrBusy) {
+			return errors.New("实例已由另一个 semantic-robot-instance 进程管理")
+		}
+		return fmt.Errorf("锁定实例失败: %w", err)
 	}
-	defer syscall.Flock(int(lockFile.Fd()), syscall.LOCK_UN)
+	defer filelock.Unlock(lockFile)
 
 	config, err := LoadConfig(filepath.Join(instanceDirectory, "instance.yaml"))
 	if err != nil {

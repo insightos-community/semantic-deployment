@@ -50,3 +50,24 @@ Copyright 2026 InsightOS. First-party code: [Apache-2.0](LICENSE). See [NOTICE](
 ## Reproducible platform builds
 
 See [glibc, musl and macOS build instructions](README.build.md) for pinned source revisions, exact scripts, tool requirements, local commands, CI reproduction and platform support boundaries.
+
+## Windows ports (in progress)
+
+The supervisor and debug stack now share `internal/ports/filelock`: Linux/macOS
+use `flock`, and Windows uses nonblocking `LockFileEx`. The native
+[ports workflow](.github/workflows/platform-ports.yml) tests separate-handle and
+separate-process contention, explicit unlock, close and forced process exit on
+all three platforms, including paths containing spaces and Chinese characters.
+
+With Go 1.25.8, run on Linux, macOS or Windows:
+
+```text
+go test ./internal/ports/... -count=1 -timeout=2m
+```
+
+This validates the lock adapter only. The complete Windows supervisor still
+needs process-tree ownership, graceful-stop IPC and process-identity adapters;
+there is no Windows executable release yet. Existing Linux/macOS instance
+startup and stop-evidence handling remain covered by `go test ./...`.
+Lock owners explicitly unlock before closing the file; OS cleanup after a
+crash can take time ([Windows API contract](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-lockfileex)).
