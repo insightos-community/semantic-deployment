@@ -208,7 +208,7 @@ func TestPilotNonzeroSafeStopIsFailure(t *testing.T) {
 	directory := t.TempDir()
 	script := filepath.Join(directory, "pilot")
 	writeTestFile(t, directory, "pilot",
-		"#!/bin/sh\ntrap 'exit 7' TERM INT\nwhile :; do sleep 1; done\n", 0o755)
+		"#!/bin/sh\ntrap 'exit 7' TERM INT\nprintf '%s\\n' \"$$\" > \"$PWD/pilot.ready\"\nwhile :; do sleep 1; done\n", 0o755)
 	process, err := startProcess("semantic-pilot", script, nil, directory,
 		filepath.Join(directory, "pilot.log"), os.Environ())
 	if err != nil {
@@ -290,7 +290,7 @@ func createTestBundleWithRegistry(t *testing.T, registry string) string {
 	}
 	frameworkScript := fmt.Sprintf("#!/bin/sh\nSEMANTIC_TEST_HELPER_AF=1 exec %s -test.run '^TestAbilityFrameworkHelperProcess$' --\n", strconv.Quote(executable))
 	pilotScript := "#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$PWD/pilot.args\"\n" +
-		"trap 'if [ \"$SEMANTIC_TEST_NO_STOP_REPORT\" != \"1\" ]; then printf \"{\\\"safe\\\":true,\\\"hold_confirmed\\\":true,\\\"active_invocations\\\":[],\\\"reason\\\":\\\"idle\\\",\\\"finished_at\\\":\\\"2026-08-12T00:00:00Z\\\"}\\n\" > \"$SEMANTIC_PILOT_STOP_REPORT\"; fi; exit 0' TERM INT\nwhile :; do sleep 1; done\n"
+		"trap 'if [ \"$SEMANTIC_TEST_NO_STOP_REPORT\" != \"1\" ]; then printf \"{\\\"safe\\\":true,\\\"hold_confirmed\\\":true,\\\"active_invocations\\\":[],\\\"reason\\\":\\\"idle\\\",\\\"finished_at\\\":\\\"2026-08-12T00:00:00Z\\\"}\\n\" > \"$SEMANTIC_PILOT_STOP_REPORT\"; fi; exit 0' TERM INT\nprintf '%s\\n' \"$$\" > \"$PWD/pilot.ready\"\nwhile :; do sleep 1; done\n"
 	writeTestFile(t, source, "bin/semantic-robot-instance", "#!/bin/sh\nexit 0\n", 0o755)
 	writeTestFile(t, source, "bin/AbilityFramework", frameworkScript, 0o755)
 	writeTestFile(t, source, "bin/semantic-pilot", pilotScript, 0o755)
@@ -487,6 +487,16 @@ func waitForStatus(t *testing.T, directory string, expected Status) {
 	for time.Now().Before(deadline) {
 		state, err := ReadState(directory)
 		if err == nil && state.Status == expected {
+			// StatusRunning records process creation, not the shell helper's
+			// signal-handler readiness. Match the current PID so a previous
+			// run's marker cannot make restart tests stop the helper too early.
+			if expected == StatusRunning && state.PilotPID > 0 {
+				ready, readErr := os.ReadFile(filepath.Join(directory, "pilot.ready"))
+				if readErr != nil || strings.TrimSpace(string(ready)) != strconv.Itoa(state.PilotPID) {
+					time.Sleep(10 * time.Millisecond)
+					continue
+				}
+			}
 			return
 		}
 		if err == nil && state.Status == StatusFailed {

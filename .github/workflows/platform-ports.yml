@@ -1,0 +1,50 @@
+name: Platform ports
+on:
+  pull_request:
+    paths:
+      - internal/ports/**
+      - internal/instance/**
+      - go.mod
+      - go.sum
+      - .github/workflows/platform-ports.yml
+  push:
+    branches: [main]
+    paths:
+      - internal/ports/**
+      - internal/instance/**
+      - go.mod
+      - go.sum
+      - .github/workflows/platform-ports.yml
+  workflow_dispatch: {}
+permissions:
+  contents: read
+concurrency:
+  group: platform-ports-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  contracts:
+    name: Native ports (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
+        with:
+          go-version: 1.25.8
+      - name: Exercise native file-lock contracts including process termination
+        run: go test -json ./internal/ports/... -count=1 -timeout=2m > ports-tests.json
+      - name: Preserve Linux and macOS supervisor behavior
+        if: runner.os != 'Windows'
+        run: go test ./... -count=1 -timeout=5m
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: ports-tests-${{ matrix.os }}
+          path: ports-tests.json
+          if-no-files-found: error
