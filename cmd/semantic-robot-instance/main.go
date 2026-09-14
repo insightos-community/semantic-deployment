@@ -20,9 +20,8 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	stopport "insightos.cn/semantic-robot-deployment/internal/ports/stop"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"insightos.cn/semantic-robot-deployment/internal/instance"
@@ -69,7 +68,10 @@ func debugStack(arguments []string) error {
 	if *directory == "" {
 		return fmt.Errorf("debug-stack 需要 --instance")
 	}
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, cancel, err := stopport.NotifyContext(context.Background())
+	if err != nil {
+		return err
+	}
 	defer cancel()
 	return instance.RunDebugStack(ctx, *directory, os.Stdout)
 }
@@ -88,7 +90,10 @@ func start(arguments []string) error {
 	if *config == "" {
 		return fmt.Errorf("start 需要 --config")
 	}
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, cancel, err := stopport.NotifyContext(context.Background())
+	if err != nil {
+		return err
+	}
 	defer cancel()
 	return instance.Start(ctx, instance.StartOptions{
 		DeploymentPath: *config, DataDirectory: *dataDirectory, BundleDirectory: *bundleDirectory,
@@ -122,7 +127,10 @@ func run(arguments []string) error {
 	if *directory == "" {
 		return fmt.Errorf("run 需要 --instance")
 	}
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, cancel, err := stopport.NotifyContext(context.Background())
+	if err != nil {
+		return err
+	}
 	defer cancel()
 	return instance.Run(ctx, *directory)
 }

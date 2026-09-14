@@ -17,12 +17,12 @@ package instance
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+	processport "insightos.cn/semantic-robot-deployment/internal/ports/process"
+	stopport "insightos.cn/semantic-robot-deployment/internal/ports/stop"
 	"os"
 	"path/filepath"
 	"strconv"
-	"syscall"
 	"time"
 )
 
@@ -45,6 +45,7 @@ type State struct {
 	RobotID             string        `json:"robot_id"`
 	Status              Status        `json:"status"`
 	Revision            int64         `json:"revision"`
+	SupervisorIdentity  string        `json:"supervisor_identity,omitempty"`
 	SupervisorPID       int           `json:"supervisor_pid,omitempty"`
 	AbilityFrameworkPID int           `json:"ability_framework_pid,omitempty"`
 	PilotPID            int           `json:"pilot_pid,omitempty"`
@@ -97,23 +98,23 @@ func InspectStatus(instanceDirectory string) (State, error) {
 		return State{}, err
 	}
 	if (state.Status == StatusStarting || state.Status == StatusRunning || state.Status == StatusStopping) &&
-		state.SupervisorPID > 0 && !processAlive(state.SupervisorPID) {
+		state.SupervisorPID > 0 && !supervisorAlive(state) {
 		state.Status = StatusFailed
 		state.Error = "supervisor 进程已退出，状态尚未完成收口"
 	}
 	return state, nil
 }
 
-func processAlive(pid int) bool {
-	if pid <= 0 {
+func processAlive(pid int) bool { return processport.Alive(pid) }
+func supervisorAlive(state State) bool {
+	if !processAlive(state.SupervisorPID) {
 		return false
 	}
-	process, err := os.FindProcess(pid)
-	if err != nil {
-		return false
+	if state.SupervisorIdentity == "" {
+		return true
 	}
-	err = process.Signal(syscall.Signal(0))
-	return err == nil || errors.Is(err, os.ErrPermission)
+	actual, err := stopport.Identity(state.SupervisorPID)
+	return err == nil && actual == state.SupervisorIdentity
 }
 
 func writePID(path string, pid int) error {

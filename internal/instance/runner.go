@@ -27,18 +27,21 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"syscall"
 	"time"
 
 	"insightos.cn/semantic-robot-deployment/internal/abilityframework"
 	"insightos.cn/semantic-robot-deployment/internal/bundle"
 	"insightos.cn/semantic-robot-deployment/internal/ports/filelock"
+	processport "insightos.cn/semantic-robot-deployment/internal/ports/process"
+	stopport "insightos.cn/semantic-robot-deployment/internal/ports/stop"
 )
 
 type managedProcess struct {
-	name string
-	cmd  *exec.Cmd
-	done chan error
+	name     string
+	cmd      *exec.Cmd
+	done     chan error
+	tree     *processport.Tree
+	identity string
 }
 
 var errSafetyUnconfirmed = errors.New("Robot 安全停止证据未确认")
@@ -65,21 +68,24 @@ func startProcess(name, executable string, arguments []string, directory, logPat
 		return nil, err
 	}
 	command := exec.Command(executable, arguments...)
-	// supervisor 必须独占终端的信号边界。否则用户在调试终端按 Ctrl-C 时，
-	// SIGINT 会同时到达 AbilityFramework、Pilot 和 supervisor，子进程会在
-	// Pilot 提交 hold 证据之前退出，彻底破坏固定的安全停止顺序。每个直接
-	// 受管进程使用独立进程组后，终端信号只唤醒 supervisor；后续仍由这里
-	// 按 Pilot → Ability → AbilityFramework 的顺序发送显式停止请求。
-	command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	command.Dir = directory
 	command.Env = environment
 	command.Stdout = logFile
 	command.Stderr = logFile
-	if err := command.Start(); err != nil {
+	tree, err := processport.Start(command)
+	if err != nil {
 		logFile.Close()
 		return nil, fmt.Errorf("启动 %s 失败: %w", name, err)
 	}
-	process := &managedProcess{name: name, cmd: command, done: make(chan error, 1)}
+	identity, err := stopport.Identity(command.Process.Pid)
+	if err != nil {
+		_ = tree.Kill()
+		_ = command.Wait()
+		_ = tree.Close()
+		_ = logFile.Close()
+		return nil, err
+	}
+	process := &managedProcess{name: name, cmd: command, done: make(chan error, 1), tree: tree, identity: identity}
 	go func() {
 		err := command.Wait()
 		_ = logFile.Close()
@@ -96,8 +102,7 @@ func (process *managedProcess) terminate(timeout time.Duration, requireCleanExit
 	// completed Pilot hold and Ability stop, retire the whole owned group:
 	// macOS has no Linux PR_SET_PDEATHSIG to reap Ability Python children.
 	deadline := time.Now().Add(timeout)
-	group := -process.cmd.Process.Pid
-	if err := syscall.Kill(group, syscall.SIGTERM); err != nil && !errors.Is(err, syscall.ESRCH) {
+	if err := process.tree.Terminate(); err != nil {
 		return false, fmt.Errorf("终止 %s 进程组: %w", process.name, err)
 	}
 	select {
@@ -106,21 +111,21 @@ func (process *managedProcess) terminate(timeout time.Duration, requireCleanExit
 			return false, fmt.Errorf("%s 安全停止返回非零状态: %w", process.name, err)
 		}
 		for {
-			groupErr := syscall.Kill(group, 0)
-			if errors.Is(groupErr, syscall.ESRCH) {
+			alive, groupErr := process.tree.Alive()
+			if groupErr == nil && !alive {
 				return err == nil, nil
 			}
 			if groupErr != nil {
 				return false, fmt.Errorf("检查 %s 子进程组: %w", process.name, groupErr)
 			}
 			if time.Now().After(deadline) {
-				_ = syscall.Kill(group, syscall.SIGKILL)
+				_ = process.tree.Kill()
 				return false, fmt.Errorf("%s 子进程未在 %s 内退出", process.name, timeout)
 			}
 			time.Sleep(10 * time.Millisecond)
 		}
 	case <-time.After(timeout):
-		_ = syscall.Kill(group, syscall.SIGKILL)
+		_ = process.tree.Kill()
 		<-process.done
 		return false, fmt.Errorf("%s 未在 %s 内安全退出，已强制终止", process.name, timeout)
 	}
@@ -132,7 +137,7 @@ func (process *managedProcess) requestGracefulStop(timeout time.Duration) error 
 	if process == nil || process.cmd.Process == nil {
 		return errors.New("semantic-pilot 进程不存在")
 	}
-	if err := process.cmd.Process.Signal(syscall.SIGTERM); err != nil {
+	if err := stopport.Request(process.cmd.Process.Pid, process.identity); err != nil {
 		return err
 	}
 	select {
@@ -214,6 +219,10 @@ func Run(ctx context.Context, instanceDirectory string) (runErr error) {
 	state.Status = StatusStarting
 	state.Error = ""
 	state.SupervisorPID = os.Getpid()
+	state.SupervisorIdentity, err = stopport.Identity(state.SupervisorPID)
+	if err != nil {
+		return err
+	}
 	state.AbilityFrameworkPID, state.PilotPID = 0, 0
 	state.StartedAt = time.Now().UTC()
 	state.StoppedAt = time.Time{}
@@ -313,6 +322,7 @@ func Run(ctx context.Context, instanceDirectory string) (runErr error) {
 		if err != nil {
 			return finishFailed(instanceDirectory, state, err)
 		}
+		defer frameworkProcess.tree.Close()
 		state.AbilityFrameworkPID = frameworkProcess.cmd.Process.Pid
 		_ = writePID(filepath.Join(instanceDirectory, "run", "ability-framework.pid"), state.AbilityFrameworkPID)
 		_ = writeState(instanceDirectory, &state)
@@ -372,6 +382,7 @@ func Run(ctx context.Context, instanceDirectory string) (runErr error) {
 		_ = shutdown()
 		return finishFailed(instanceDirectory, state, err)
 	}
+	defer pilotProcess.tree.Close()
 	pilotStarted = true
 	state.PilotPID = pilotProcess.cmd.Process.Pid
 	state.Status = StatusRunning
@@ -491,14 +502,17 @@ func abilityFrameworkEnvironment(instanceDirectory string, environment []string)
 	if err := os.MkdirAll(temporaryDirectory, 0o750); err != nil {
 		return nil, fmt.Errorf("创建 AbilityFramework 临时目录: %w", err)
 	}
-	return setEnvironment(environment, "TMPDIR", temporaryDirectory), nil
+	for _, key := range []string{"TMPDIR", "TMP", "TEMP"} {
+		environment = setEnvironment(environment, key, temporaryDirectory)
+	}
+	return environment, nil
 }
 
 func setEnvironment(environment []string, key, value string) []string {
 	prefix := key + "="
 	result := make([]string, 0, len(environment)+1)
 	for _, item := range environment {
-		if !strings.HasPrefix(item, prefix) {
+		if !strings.EqualFold(strings.SplitN(item, "=", 2)[0], key) {
 			result = append(result, item)
 		}
 	}
@@ -515,16 +529,13 @@ func Stop(ctx context.Context, instanceDirectory string) error {
 	if state.Status == StatusStopped || state.Status == StatusRendered {
 		return nil
 	}
-	if state.SupervisorPID <= 0 || !processAlive(state.SupervisorPID) {
+	if state.SupervisorPID <= 0 || !supervisorAlive(state) {
 		return errors.New("实例 supervisor 不在线，无法确认安全停止；请检查 status 和设备状态")
 	}
-	process, err := os.FindProcess(state.SupervisorPID)
-	if err != nil {
+	if err := stopport.Request(state.SupervisorPID, state.SupervisorIdentity); err != nil {
 		return err
 	}
-	if err := process.Signal(syscall.SIGTERM); err != nil {
-		return err
-	}
+
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
 	for {
