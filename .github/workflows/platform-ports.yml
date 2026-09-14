@@ -38,7 +38,7 @@ jobs:
         with:
           go-version: 1.25.8
       - name: Exercise native lock, process-tree and graceful-stop contracts
-        run: go test -json ./internal/ports/... -count=1 -timeout=2m > ports-tests.json
+        run: go test -json ./internal/ports/... ./internal/instance -count=1 -timeout=2m > ports-tests.json
       - name: Build all native deployment commands
         run: go build ./cmd/...
       - name: Preserve Linux and macOS supervisor behavior
