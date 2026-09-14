@@ -283,18 +283,9 @@ func Run(ctx context.Context, instanceDirectory string) (runErr error) {
 		}
 		stopContext, cancel := context.WithTimeout(context.Background(), opened.Manifest.ShutdownTimeout())
 		defer cancel()
-		for index := len(activated) - 1; index >= 0; index-- {
-			identifier := activated[index]
-			if err := client.Stop(stopContext, identifier); err != nil {
-				failures = append(failures, fmt.Sprintf("停止 Ability %s: %v", activated[index], err))
-				continue
-			}
-			if err := client.WaitStopped(stopContext, identifier, opened.Manifest.ShutdownTimeout()); err != nil {
-				failures = append(failures, fmt.Sprintf("确认 Ability %s 停止: %v", identifier, err))
-			} else {
-				evidence.AbilityStopConfirmed++
-			}
-		}
+		evidence.AbilityStopConfirmed, failures = abilityframework.StopAll(
+			stopContext, client, activated, opened.Manifest.ShutdownTimeout(),
+		)
 		if len(failures) > 0 {
 			// Keep the framework available for reconciliation when Ability stop
 			// has not been confirmed; group termination requires that evidence.
