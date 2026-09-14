@@ -1,7 +1,7 @@
 // Copyright 2026 InsightOS
 // SPDX-License-Identifier: Apache-2.0
 
-package instance
+package abilityframework
 
 import (
 	"context"
@@ -18,7 +18,7 @@ type abilityStopClient interface {
 // starts). Dispatch in reverse activation order, then confirm every accepted
 // request within the shared deadline. Waiting after each dispatch would add all
 // asynchronous teardown delays together and starve later Abilities of a stop request.
-func stopAbilities(ctx context.Context, client abilityStopClient, activated []string, timeout time.Duration) (int, []string) {
+func StopAll(ctx context.Context, client abilityStopClient, activated []string, timeout time.Duration) (int, []string) {
 	var accepted, failures []string
 	for index := len(activated) - 1; index >= 0; index-- {
 		id := activated[index]

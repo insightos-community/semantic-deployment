@@ -283,7 +283,7 @@ func Run(ctx context.Context, instanceDirectory string) (runErr error) {
 		}
 		stopContext, cancel := context.WithTimeout(context.Background(), opened.Manifest.ShutdownTimeout())
 		defer cancel()
-		evidence.AbilityStopConfirmed, failures = stopAbilities(
+		evidence.AbilityStopConfirmed, failures = abilityframework.StopAll(
 			stopContext, client, activated, opened.Manifest.ShutdownTimeout(),
 		)
 		if len(failures) > 0 {

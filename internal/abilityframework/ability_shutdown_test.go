@@ -1,7 +1,7 @@
 // Copyright 2026 InsightOS
 // SPDX-License-Identifier: Apache-2.0
 
-package instance
+package abilityframework
 
 import (
 	"context"
@@ -41,7 +41,7 @@ func TestAbilityShutdownDispatchesAllBeforeWaiting(t *testing.T) {
 	client := &asynchronousStops{count: len(ids)}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	confirmed, failures := stopAbilities(ctx, client, ids, time.Second)
+	confirmed, failures := StopAll(ctx, client, ids, time.Second)
 	if confirmed != 7 || len(failures) != 0 {
 		t.Fatalf("confirmed=%d failures=%v", confirmed, failures)
 	}
@@ -52,7 +52,7 @@ func TestAbilityShutdownDispatchesAllBeforeWaiting(t *testing.T) {
 }
 func TestAbilityShutdownKeepsUnconfirmedEvidence(t *testing.T) {
 	client := &asynchronousStops{count: 3, reject: "rejected", unconfirmed: "unknown"}
-	confirmed, failures := stopAbilities(context.Background(), client, []string{"ready", "rejected", "unknown"}, time.Second)
+	confirmed, failures := StopAll(context.Background(), client, []string{"ready", "rejected", "unknown"}, time.Second)
 	if confirmed != 1 || len(failures) != 2 {
 		t.Fatalf("confirmed=%d failures=%v", confirmed, failures)
 	}
