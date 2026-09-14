@@ -27,7 +27,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, macos-15, windows-latest]
+        os: [ubuntu-24.04, macos-15, windows-2022]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     steps:
@@ -37,8 +37,10 @@ jobs:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
         with:
           go-version: 1.25.8
-      - name: Exercise native file-lock contracts including process termination
+      - name: Exercise native lock, process-tree and graceful-stop contracts
         run: go test -json ./internal/ports/... -count=1 -timeout=2m > ports-tests.json
+      - name: Build all native deployment commands
+        run: go build ./cmd/...
       - name: Preserve Linux and macOS supervisor behavior
         if: runner.os != 'Windows'
         run: go test ./... -count=1 -timeout=5m
