@@ -1,0 +1,84 @@
+{
+  "checked_date": "2026-09-28",
+  "target": "ubuntu@172.16.60.194",
+  "repositories": {
+    "semantic-framework": {
+      "commit": "538ecd2542ad670e38186bedf61664085e3f8241",
+      "branch": "deploy/semantic-20260928",
+      "url": "https://github.com/insightos-community/semantic-framework.git"
+    },
+    "semantic-web": {
+      "commit": "5be0ac091103a456050633c4ba49d501a48b46c0",
+      "branch": "deploy/semantic-20260928",
+      "url": "https://github.com/insightos-community/semantic-web.git"
+    },
+    "semantic-robotsdk/robot-sdk": {
+      "commit": "c8900ad7d4038336f4f169764a16f6b1f69c734c",
+      "branch": "deploy/semantic-20260928",
+      "url": "https://github.com/insightos-community/semantic-robotsdk/robot-sdk.git"
+    },
+    "semantic-ability/r1pro-behavior-ability": {
+      "commit": "80bec60838b3bc3d8ddaa211e2765a899ab41108",
+      "branch": "deploy/semantic-20260928",
+      "url": "https://github.com/insightos-community/semantic-ability/r1pro-behavior-ability.git"
+    },
+    "semantic-ability/ability-runtime": {
+      "commit": "258386ea2c8e13a2cef9a3427234d6487755d54f",
+      "branch": "deploy/semantic-20260928",
+      "url": "https://github.com/insightos-community/semantic-ability/ability-runtime.git"
+    },
+    "semantic-skill/robot-skill": {
+      "commit": "0889115ad227d6254a8152e57f6a3ea876607d45",
+      "branch": "deploy/semantic-20260928",
+      "url": "https://github.com/insightos-community/semantic-skill/robot-skill.git"
+    },
+    "semantic-simulation/isaac-runtime": {
+      "commit": "99c28c571ebf416637589becdd79bc7b3457fd09",
+      "branch": "deploy/semantic-20260928",
+      "url": "https://github.com/insightos-community/semantic-simulation/issac-runtime.git"
+    },
+    "third_party/curobo": {
+      "commit": "78612f45cef52c3fa0298de243a54cd7ca614414",
+      "branch": "",
+      "url": "https://github.com/StanfordVL/curobo.git"
+    },
+    "third_party/sam3": {
+      "commit": "2345a4ad109ac29c569da749c91d84f10dc08c40",
+      "branch": "",
+      "url": "https://github.com/facebookresearch/sam3.git"
+    }
+  },
+  "local_packages": {
+    "r1pro-behavior-atomic-0.1.26.zip": "dff26b77e672dda85a175a6111fa2322ead1458e163776f41eb6ffde2f38b9ab",
+    "r1pro-behavior-abilities-0.5.24.zip": "ecc742aff441df24061f455fc2bbb129af30aa296ee65862eccf20c7d9f5b834",
+    "behavior-init-0.1.5.zip": "3a58891cc807f0d809b8fd6258593ab647112ac65f8437c9a406cc61ae2aa908",
+    "behavior-nav-0.1.8.zip": "a880aacfe959c01f30772a0ed92145774cc5c84a9a526fb6aa1f1f2a712e4c0a",
+    "behavior-grasp-0.1.46.zip": "d2887c01a4a5b6c230ca6b34ca2b641ef0d740898375859ac105816c46975496",
+    "behavior-upright-0.1.1.zip": "99058d292b8527a91542eec85984a57a3605231790c6f72a72fe3a58df325984",
+    "behavior-place-0.1.7.zip": "2571371b8f1b04484cf27561cfcca1004da94fb3c63a0589d07945ae7a607a3a",
+    "behavior-radio-button-0.1.37.zip": "6cdb167efff6a6a6eaccc2f4030ff4fa5abd1e1b0635535e0ff1f81d4d88305e",
+    "behavior-scenes-3.9.3.zip": "96a3dde7d8aeb5b8d09f0164e57952dfb463deeee8cefd4352512f11a5819141"
+  },
+  "note": "Read-only inspection. Package names identify local baseline; robot type package embeds host paths and must be rebuilt or reconfigured for destination. OmniGibson snapshot has no Git metadata and must be locked by content manifest.",
+  "deployment_branch": "deploy/semantic-20260928",
+  "behavior_source": {
+    "url": "https://github.com/StanfordVL/BEHAVIOR-1K.git",
+    "commit": "b1979916ec1549b10a4e65e630bc6504a9af1b00"
+  },
+  "runtime_source_version": "0.1.27",
+  "deployment_repository": "Use the commit containing this lock file.",
+  "target_packages": {
+    "behavior-upright-0.1.1.zip": "99058d292b8527a91542eec85984a57a3605231790c6f72a72fe3a58df325984",
+    "behavior-init-0.1.5.zip": "506e13278dcf5422fef479d3bdedd80f239c384ad6f558b490547175853b382b",
+    "behavior-grasp-0.1.46.zip": "d2887c01a4a5b6c230ca6b34ca2b641ef0d740898375859ac105816c46975496",
+    "r1pro-behavior-abilities-0.5.24.zip": "80bf47425c917e88af50ec99871f7ae37347f33a5cb381396ec2c4dad7ba014c",
+    "behavior-place-0.1.7.zip": "2571371b8f1b04484cf27561cfcca1004da94fb3c63a0589d07945ae7a607a3a",
+    "behavior-picking_up_trash-scenes-3.9.3.zip": "27ea39ad5c7ac2c8c1ca8373edf0c21480018c19eeb5e5721b4f82e907de0264",
+    "behavior-radio-button-0.1.37.zip": "6cdb167efff6a6a6eaccc2f4030ff4fa5abd1e1b0635535e0ff1f81d4d88305e",
+    "behavior-nav-0.1.8.zip": "a880aacfe959c01f30772a0ed92145774cc5c84a9a526fb6aa1f1f2a712e4c0a",
+    "r1pro-behavior-atomic-0.1.28.zip": "6f0bf8a22f724dc3ca1cc4de2ff75459285fe0de4cf2ba0a8fcb513616fec949",
+    "behavior-turning_on_radio-scenes-3.9.3.zip": "5aa2fccea2f876dc99ffedf8ec3d7581c1c41a06b2e8ed6bc7495dc2f5dcccf2"
+  },
+  "robot_base_version": "0.1.28",
+  "deployment_functional_commit": "0b4d580cca7d6f60281990f5d0a89aecf3074b4d"
+}

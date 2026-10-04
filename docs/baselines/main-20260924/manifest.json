@@ -1,0 +1,111 @@
+{
+  "source_root": "/home/amax/dyc/semantic-isaac",
+  "repositories": [
+    {
+      "path": ".integration/current/behavior-r1pro-sdk",
+      "branch": "v3.x.x-simu",
+      "commit": "047c5749df78d50f2d79646377fa5aaf062bdb34",
+      "new_commit": true
+    },
+    {
+      "path": ".integration/current/r1pro-behavior-ability",
+      "branch": "develop",
+      "commit": "ac01c583aede632bcbb17976cb1b83ea53eeaf6b",
+      "new_commit": true
+    },
+    {
+      "path": "semantic-simulation/isaac-runtime",
+      "branch": "feature/behavior-development-observations",
+      "commit": "cb5465609d9696cdeb5b9ba7eddd669fc88f0420",
+      "new_commit": false
+    },
+    {
+      "path": "semantic-skill/robot-skill",
+      "branch": "feature/behavior-atomic-managed",
+      "commit": "6d7063ac5d2b1307d6d0bbcb1baff16f17456361",
+      "new_commit": true
+    },
+    {
+      "path": "semantic-robotsdk/robot-sdk",
+      "branch": "feature/behavior-development-observations",
+      "commit": "9d942e70d50403d11b24efe3a6510a43c43fbf64",
+      "new_commit": true
+    },
+    {
+      "path": "semantic-web",
+      "branch": "feature/behavior-isaac",
+      "commit": "5be0ac091103a456050633c4ba49d501a48b46c0",
+      "new_commit": false
+    },
+    {
+      "path": "semantic-framework",
+      "branch": "feature/behavior-atomic-managed",
+      "commit": "538ecd2542ad670e38186bedf61664085e3f8241",
+      "new_commit": true
+    },
+    {
+      "path": "semantic-ability/ability-runtime",
+      "branch": "develop",
+      "commit": "258386ea2c8e13a2cef9a3427234d6487755d54f",
+      "new_commit": false
+    },
+    {
+      "path": "semantic-ability/r1pro-ability",
+      "branch": "feature/behavior-isaac",
+      "commit": "7dd82844999f05476bac5566d1bd2d4ccb7182e6",
+      "new_commit": false
+    },
+    {
+      "path": "semantic-ability/r1pro-behavior-ability",
+      "branch": "feature/semantic-runtime",
+      "commit": "0eea16eb26332f54e165a6dcde86d56d5d3cdcec",
+      "new_commit": true
+    }
+  ],
+  "skills": [
+    {
+      "name": "behavior-grasp",
+      "version": "0.1.34",
+      "source_directory": "/home/amax/dyc/semantic-isaac/semantic-framework/.output/robots/robot_r1/robot-f10cb068-e260-4d55-9133-ff6c7e93fad7-robot_r1/pilot/skills/packages/behavior-grasp/0.1.34"
+    },
+    {
+      "name": "behavior-init",
+      "version": "0.1.2",
+      "source_directory": "/home/amax/dyc/semantic-isaac/semantic-framework/.output/robots/robot_r1/robot-f10cb068-e260-4d55-9133-ff6c7e93fad7-robot_r1/pilot/skills/packages/behavior-init/0.1.2"
+    },
+    {
+      "name": "behavior-nav",
+      "version": "0.1.7",
+      "source_directory": "/home/amax/dyc/semantic-isaac/semantic-framework/.output/robots/robot_r1/robot-f10cb068-e260-4d55-9133-ff6c7e93fad7-robot_r1/pilot/skills/packages/behavior-nav/0.1.7"
+    },
+    {
+      "name": "behavior-place",
+      "version": "0.1.3",
+      "source_directory": "/home/amax/dyc/semantic-isaac/semantic-framework/.output/robots/robot_r1/robot-f10cb068-e260-4d55-9133-ff6c7e93fad7-robot_r1/pilot/skills/packages/behavior-place/0.1.3"
+    },
+    {
+      "name": "behavior-radio-button",
+      "version": "0.1.35",
+      "source_directory": "/home/amax/dyc/semantic-isaac/semantic-framework/.output/robots/robot_r1/robot-f10cb068-e260-4d55-9133-ff6c7e93fad7-robot_r1/pilot/skills/packages/behavior-radio-button/0.1.35"
+    },
+    {
+      "name": "behavior-upright",
+      "version": "0.1.0",
+      "source_directory": "/home/amax/dyc/semantic-isaac/semantic-framework/.output/robots/robot_r1/robot-f10cb068-e260-4d55-9133-ff6c7e93fad7-robot_r1/pilot/skills/packages/behavior-upright/0.1.0"
+    }
+  ],
+  "ability_component": {
+    "name": "r1pro-behavior-atomic-abilities",
+    "version": "0.5.14",
+    "component_id": "c6c03ac61f1ce9296d668e208b90df8d115a486bba171ded2ae45a71ba10a39b",
+    "source_revision": "da964fc9a7f6460c74de18d51a3b96ce1498f12b3c5d31628d7833f72eaf7529"
+  },
+  "validation": {
+    "pilot_package_tests": "passed",
+    "ability_and_sdk_tests": 45,
+    "subtests": 1,
+    "skill_tests": 23
+  },
+  "main_runtime_restarted": false,
+  "local_unpublished_grasp_0_1_35_included": false
+}

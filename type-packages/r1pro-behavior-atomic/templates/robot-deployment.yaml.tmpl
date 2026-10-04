@@ -1,0 +1,52 @@
+api_version: 1
+robot:
+  id: {{ quote .Instance.Spec.Robot.ID }}
+  display_name: {{ quote .Instance.Spec.Robot.DisplayName }}
+  model: r1pro
+  backend: isaac
+  sdk:
+    package: {{ quote .SDKPackage }}
+    endpoint: {{ quote .Instance.Spec.Robot.SDKEndpoint }}
+    backend_profile: behavior-omnigibson
+    firmware_profile: behavior-omnigibson
+    # 原子控制和 IK 在 Runtime 内执行，Pilot 使用能力接口。
+    providers:
+      kinematics: none
+      motion: none
+    scene_instance_id: {{ quote .Instance.Spec.Robot.SceneInstanceID }}
+    options: {{ json .SDKOptions }}
+  frames:
+    world: world
+    base: base_link
+    end_effectors:
+      # 与上游 r1pro.yaml 的 eef_link_names 一致，夹爪壳体不是工具末端坐标系。
+      left: left_eef_link
+      right: right_eef_link
+ability_framework:
+  endpoint: {{ quote .Instance.Spec.AbilityFramework.Endpoint }}
+  managed_by_instance: {{ .Instance.Spec.AbilityFramework.Managed }}
+abilities:
+  arm:
+    ability_name: R1ProArm.V2
+  end_effector:
+    ability_name: R1ProEndEffector.V2
+  gripper:
+    ability_name: R1ProGripper.V2
+  navigation:
+    ability_name: R1ProNavigation.V2
+  object_perception:
+    ability_name: R1ProObjectPerception.V2
+  robot_state:
+    ability_name: R1ProRobotState.V2
+  sensor_capture:
+    ability_name: R1ProSensorCapture.V2
+  torso:
+    ability_name: R1ProTorso.V2
+pilot:
+  id: {{ quote .Instance.Spec.Pilot.ID }}
+  robot_skill_directory: {{ quote .SkillDirectory }}
+  worker_timeout_seconds: 30
+  heartbeat_interval_seconds: 2
+  allow_ability_debug: true
+# Robot Skills are installed from Server Registry after the robot is registered.
+robot_skills: []

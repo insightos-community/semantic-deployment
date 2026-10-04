@@ -1,0 +1,82 @@
+# semantic-deployment CI：开发 PR / 合入 MR 只做基础检查（gofmt / vet / 单测 / 编译）。
+# 已开 MR 时不再跑分支 push，避免双跑。
+workflow:
+  auto_cancel:
+    on_new_commit: conservative
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS && $CI_PIPELINE_SOURCE == "push"'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+    - if: '$CI_COMMIT_TAG =~ /^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-(alpha|beta|rc)\.(0|[1-9][0-9]*))?$/'
+    - when: never
+
+stages: [validate, test, build]
+
+default:
+  interruptible: true
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+  image: $CI_IMAGE_GOLANG
+  cache:
+    key:
+      files:
+        - go.sum
+    paths:
+      - .go/pkg/mod
+      - .go/cache
+    policy: pull-push
+
+variables:
+  GIT_DEPTH: "0"
+  GOPATH: "$CI_PROJECT_DIR/.go"
+  GOCACHE: "$CI_PROJECT_DIR/.go/cache"
+  GOBIN: "$CI_PROJECT_DIR/.go/bin"
+  GOPROXY: "https://goproxy.cn,https://mirrors.aliyun.com/goproxy/,direct"
+  GOSUMDB: "sum.golang.google.cn"
+  CI_IMAGE_GOLANG: "swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/library/golang:1.23.5"
+
+.verify_rules:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+    - if: '$CI_COMMIT_TAG =~ /^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-(alpha|beta|rc)\.(0|[1-9][0-9]*))?$/'
+    - when: never
+
+lint:
+  stage: validate
+  extends: .verify_rules
+  timeout: 10m
+  script:
+    - test -z "$(gofmt -l $(git ls-files '*.go'))"
+    - go vet ./...
+    - go mod tidy
+    - git diff --exit-code -- go.mod go.sum
+
+test:
+  stage: test
+  extends: .verify_rules
+  timeout: 10m
+  script:
+    - go test -race -count=1 ./...
+
+build:
+  stage: build
+  extends: .verify_rules
+  timeout: 10m
+  needs:
+    - lint
+    - test
+  script:
+    - make build
+  artifacts:
+    paths:
+      - bin/
+    expire_in: 7 days

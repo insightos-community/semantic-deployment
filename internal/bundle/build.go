@@ -1,18 +1,3 @@
-// Copyright 2026 InsightOS
-// SPDX-License-Identifier: Apache-2.0
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     https://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package bundle
 
 import (
@@ -127,12 +112,7 @@ func BuildWithOptions(source, output string, mappings []FileMapping, options Bui
 	committed := false
 	defer func() {
 		if !committed {
-			_ = filepath.WalkDir(temporary, func(path string, entry os.DirEntry, err error) error {
-				if err == nil && entry.IsDir() {
-					return os.Chmod(path, 0o755)
-				}
-				return err
-			})
+			_ = os.Chmod(temporary, 0o755)
 			_ = os.RemoveAll(temporary)
 		}
 	}()
@@ -191,11 +171,6 @@ func BuildWithOptions(source, output string, mappings []FileMapping, options Bui
 		return Bundle{}, err
 	}
 	if err := os.Rename(temporary, outputAbs); err != nil {
-		return Bundle{}, err
-	}
-	// Darwin requires the moved directory to remain writable until rename.
-	temporary = outputAbs
-	if err := os.Chmod(outputAbs, 0o555); err != nil {
 		return Bundle{}, err
 	}
 	committed = true
@@ -299,9 +274,6 @@ func makeReadOnly(root string, manifest Manifest) error {
 	}
 	sort.Slice(directories, func(i, j int) bool { return len(directories[i]) > len(directories[j]) })
 	for _, directory := range directories {
-		if directory == root {
-			continue
-		} // Seal the root after the final rename.
 		if err := os.Chmod(directory, 0o555); err != nil {
 			return err
 		}

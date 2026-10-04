@@ -1,0 +1,38 @@
+apiVersion: semantic.insightos.cn/v1alpha1
+kind: RobotRuntimeBundle
+metadata:
+  name: r1pro-behavior
+  version: 0.1.1
+  description: BEHAVIOR 原生普通夹爪 R1Pro 受管运行支持
+spec:
+  robot:
+    model: r1pro
+    sdkPackage: semantic-robot-sdk-r1pro
+    backendProfiles:
+      - backend: isaac
+        profile: behavior-omnigibson
+  platform: {os: linux, arch: amd64}
+  artifacts:
+    instanceLauncher: bin/semantic-robot-instance
+    abilityFramework: bin/AbilityFramework
+    pilot: bin/semantic-pilot
+    robotSkillSDK: wheels/semantic_robot_skill_sdk-0.1.0.dev0-py3-none-any.whl
+    pythonExecutable: python/venv/bin/python
+    pythonWheels:
+      - wheels/ability_py-0.4.0-py3-none-any.whl
+      - wheels/semantic_robot_sdk_core-0.5.0.dev0-py3-none-any.whl
+      - wheels/semantic_robot_sdk_r1pro-0.5.0.dev0-py3-none-any.whl
+      - wheels/semantic_r1pro_abilities-0.4.0.dev1-py3-none-any.whl
+      - wheels/semantic_robot_skill_sdk-0.1.0.dev0-py3-none-any.whl
+    abilities:
+      - role: vla
+        template: r1pro-vla
+        abilityName: R1ProVLA.V1
+        file: abilities/vla.zip
+  templates:
+    robotDeployment: templates/robot-deployment.yaml.tmpl
+    abilityFramework: templates/ability-framework.yaml.tmpl
+    # 模型由项目/Robot 的组件绑定选择；运行支持包不内置 radio 权重或服务地址。
+  runtime:
+    readinessTimeout: 120s
+    shutdownTimeout: 30s

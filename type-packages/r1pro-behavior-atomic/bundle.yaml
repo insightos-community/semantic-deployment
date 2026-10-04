@@ -1,0 +1,68 @@
+apiVersion: semantic.insightos.cn/v1alpha1
+kind: RobotRuntimeBundle
+metadata:
+  name: r1pro-behavior-atomic
+  version: 0.1.28
+  description: BEHAVIOR 原子控制与功能 Robot Skill 的受管运行支持
+spec:
+  robot:
+    model: r1pro
+    sdkPackage: semantic-robot-sdk-r1pro
+    backendProfiles:
+    - backend: isaac
+      profile: behavior-omnigibson
+  platform:
+    os: linux
+    arch: amd64
+  artifacts:
+    instanceLauncher: bin/semantic-robot-instance
+    abilityFramework: bin/AbilityFramework
+    pilot: bin/semantic-pilot
+    robotSkillSDK: wheels/semantic_robot_skill_sdk-0.1.0.dev0-py3-none-any.whl
+    pythonExecutable: python/venv/bin/python
+    pythonWheels:
+    - wheels/ability_py-0.4.0-py3-none-any.whl
+    - wheels/semantic_robot_sdk_core-0.5.0.dev0-py3-none-any.whl
+    - wheels/semantic_robot_sdk_r1pro-0.5.6-py3-none-any.whl
+    - wheels/semantic_r1pro_behavior_abilities-0.5.24-py3-none-any.whl
+    - wheels/semantic_robot_skill_sdk-0.1.0.dev0-py3-none-any.whl
+    abilities:
+    - role: arm
+      template: r1pro-arm
+      abilityName: R1ProArm.V2
+      file: abilities/arm.zip
+    - role: end_effector
+      template: r1pro-end-effector
+      abilityName: R1ProEndEffector.V2
+      file: abilities/end_effector.zip
+    - role: gripper
+      template: r1pro-gripper
+      abilityName: R1ProGripper.V2
+      file: abilities/gripper.zip
+    - role: navigation
+      template: r1pro-navigation
+      abilityName: R1ProNavigation.V2
+      file: abilities/navigation.zip
+    - role: object_perception
+      template: r1pro-object-perception
+      abilityName: R1ProObjectPerception.V2
+      file: abilities/object_perception.zip
+    - role: robot_state
+      template: r1pro-robot-state
+      abilityName: R1ProRobotState.V2
+      file: abilities/robot_state.zip
+    - role: sensor_capture
+      template: r1pro-sensor-capture
+      abilityName: R1ProSensorCapture.V2
+      file: abilities/sensor_capture.zip
+    - role: torso
+      template: r1pro-torso
+      abilityName: R1ProTorso.V2
+      file: abilities/torso.zip
+  templates:
+    robotDeployment: templates/robot-deployment.yaml.tmpl
+    abilityFramework: templates/ability-framework.yaml.tmpl
+    modelRegistry: templates/model-registry.json
+  runtime:
+    readinessTimeout: 120s
+    shutdownTimeout: 30s

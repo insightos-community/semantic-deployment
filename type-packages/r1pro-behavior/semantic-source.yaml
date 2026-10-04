@@ -1,0 +1,36 @@
+# semantic build <本目录> --output <机器人运行支持.zip>
+# 三个二进制由已有 Go / AbilityFramework 构建产生；不打包源码环境或上游引擎。
+schema_version: 1
+kind: robot_base
+name: r1pro-behavior
+version: 0.1.1
+robot_models: [r1pro]
+bundle_manifest: robot/bundle.yaml
+python:
+  executable: robot/python/venv/bin/python
+  version: '3.11'
+  requirements: requirements.lock
+  wheels: []
+  import_modules: [r1pro_abilities.vla_service, semantic_robot_skill_sdk]
+abilities:
+  - role: vla
+    template: r1pro-vla
+    ability_name: R1ProVLA.V1
+    model_backends: [behavior-pi05]
+    package: abilities/vla.zip
+build:
+  requirements_lock: ../../../semantic-ability/r1pro-ability/profiles/behavior/requirements.lock
+  python_projects:
+    - ../../../semantic-ability/r1pro-ability
+    - ../../../semantic-robotsdk/robot-sdk/packages/core
+    - ../../../semantic-robotsdk/robot-sdk/packages/r1pro
+    - ../../../semantic-skill/robot-skill
+    - ../../../semantic-ability/ability-runtime/ability_py-0.4.0-py3-none-any.whl
+  ability_directories:
+    vla: ../../../semantic-ability/r1pro-ability/abilities/r1pro-vla
+  files:
+    robot/bundle.yaml: bundle.yaml
+    robot/templates: templates
+    robot/bin/semantic-robot-instance: ../../.output/bin/semantic-robot-instance
+    robot/bin/semantic-pilot: ../../.output/bin/semantic-pilot
+    robot/bin/AbilityFramework: ../../../semantic-ability/ability-runtime/AbilityFramework

@@ -1,0 +1,42 @@
+--- a/usd/r1pro.usda
++++ b/usd/r1pro.usda
+@@ -3419,7 +3419,7 @@
+         }
+ 
+         def PhysicsPrismaticJoint "left_gripper_finger_joint2" (
+-            apiSchemas = ["PhysxJointAPI", "PhysicsJointStateAPI:linear", "PhysicsDriveAPI:linear"]
++            apiSchemas = ["PhysxJointAPI", "PhysicsJointStateAPI:linear", "PhysicsDriveAPI:linear", "PhysxMimicJointAPI:rotX"]
+         )
+         {
+             float drive:linear:physics:damping = 0
+@@ -3438,6 +3438,10 @@
+             float physics:lowerLimit = 0
+             float physics:upperLimit = 0.05
+             float physxJoint:maxJointVelocity = 0.25
++            float physxMimicJoint:rotX:gearing = -1
++            float physxMimicJoint:rotX:offset = 0
++            rel physxMimicJoint:rotX:referenceJoint = </r1pro/left_gripper_link/left_gripper_finger_joint1>
++            uniform token physxMimicJoint:rotX:referenceJointAxis = "rotX"
+         }
+ 
+         def PhysicsFixedJoint "left_realsense_joint"
+@@ -5436,7 +5440,7 @@
+         }
+ 
+         def PhysicsPrismaticJoint "right_gripper_finger_joint2" (
+-            apiSchemas = ["PhysxJointAPI", "PhysicsJointStateAPI:linear", "PhysicsDriveAPI:linear"]
++            apiSchemas = ["PhysxJointAPI", "PhysicsJointStateAPI:linear", "PhysicsDriveAPI:linear", "PhysxMimicJointAPI:rotX"]
+         )
+         {
+             float drive:linear:physics:damping = 0
+@@ -5455,6 +5459,10 @@
+             float physics:lowerLimit = 0
+             float physics:upperLimit = 0.05
+             float physxJoint:maxJointVelocity = 0.25
++            float physxMimicJoint:rotX:gearing = -1
++            float physxMimicJoint:rotX:offset = 0
++            rel physxMimicJoint:rotX:referenceJoint = </r1pro/right_gripper_link/right_gripper_finger_joint1>
++            uniform token physxMimicJoint:rotX:referenceJointAxis = "rotX"
+         }
+ 
+         def PhysicsFixedJoint "right_realsense_joint"

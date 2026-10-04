@@ -1,0 +1,317 @@
+{
+  "load": {
+    "task": "turning_on_radio",
+    "instance_id": 301
+  },
+  "plan": {
+    "command_id": "curobo-smoke-plan",
+    "status": "succeeded",
+    "feedback": {
+      "command_id": "curobo-smoke-plan",
+      "status": "succeeded",
+      "progress": 1.0,
+      "phase": "planned",
+      "metrics": {
+        "max_velocity_rad_s": 0.014689680188894272,
+        "elapsed_sim_s": 2.2666666666666666,
+        "step_count": 141,
+        "stable_steps": 0,
+        "motion_mode": "curobo",
+        "plan_only": true,
+        "torso_used": true,
+        "planning_wall_s": 53.76396618690342,
+        "trajectory_points": 62,
+        "trajectory_index": 0,
+        "trajectory_duration_s": 2.033333333333333,
+        "position_error_m": 0.030000059628329512,
+        "orientation_error_rad": 4.1325409440220086e-06,
+        "command_timeout_sim_s": 30.0
+      },
+      "timestamp": "2026-09-24 03:33:45.458684+00:00"
+    },
+    "output": {
+      "target": {
+        "axis": "right",
+        "target": {
+          "frame_id": "world",
+          "position": [
+            5.171245574951172,
+            3.758697986602783,
+            0.504500060081482
+          ],
+          "orientation_xyzw": [
+            -0.41588232794304447,
+            0.9091227841504748,
+            -0.009664322452485321,
+            -0.0210773222848127
+          ]
+        },
+        "motion_mode": "curobo",
+        "use_torso": true,
+        "plan_only": true,
+        "approach_offset": [
+          0.0009085591799084362,
+          0.0010531044956127067,
+          0.029967740841410188
+        ],
+        "attached_object_ref": null
+      },
+      "joint_names": [
+        "torso_joint1",
+        "torso_joint2",
+        "torso_joint3",
+        "torso_joint4",
+        "left_arm_joint1",
+        "right_arm_joint1",
+        "left_arm_joint2",
+        "right_arm_joint2",
+        "left_arm_joint3",
+        "right_arm_joint3",
+        "left_arm_joint4",
+        "right_arm_joint4",
+        "left_arm_joint5",
+        "right_arm_joint5",
+        "left_arm_joint6",
+        "right_arm_joint6",
+        "left_arm_joint7",
+        "right_arm_joint7"
+      ],
+      "positions": [
+        0.9469656348228455,
+        -1.3257198333740234,
+        -0.4318302571773529,
+        0.0026614046655595303,
+        0.00024176569422706962,
+        -0.006824200972914696,
+        5.820777460030513e-06,
+        -1.887641519715544e-05,
+        -0.00017321297491434962,
+        -0.001562029356136918,
+        5.434027116280049e-05,
+        -0.0020196253899484873,
+        -5.336865797289647e-05,
+        -0.001442667911760509,
+        9.644397323427256e-06,
+        0.0019857764709740877,
+        -9.403142939845566e-06,
+        -1.4162451407173648e-05
+      ],
+      "target_positions": [
+        0.9469656348228455,
+        -1.3257217407226562,
+        -0.4318307042121887,
+        0.00266166590154171,
+        0.00024216929159592837,
+        -0.006823929492384195,
+        6.042758741386933e-06,
+        -1.854927177191712e-05,
+        -0.00017228005162905902,
+        -0.0015606143279001117,
+        5.498524842550978e-05,
+        -0.0020185979083180428,
+        -4.9867619964061305e-05,
+        -0.0014412960736081004,
+        9.952134860213846e-06,
+        0.001986098475754261,
+        -7.944841854623519e-06,
+        -1.2266903468116652e-05
+      ],
+      "eef_pose": {
+        "header": {
+          "frame_id": "world"
+        },
+        "pose": {
+          "position": {
+            "x": 5.171246528625488,
+            "y": 3.7586987018585205,
+            "z": 0.47450000047683716
+          },
+          "orientation": {
+            "x": -0.41588117199022284,
+            "y": 0.9091233289030352,
+            "z": -0.009665423661778671,
+            "w": -0.02107612900275004
+          }
+        }
+      },
+      "target_eef_pose": {
+        "header": {
+          "frame_id": "world"
+        },
+        "pose": {
+          "position": {
+            "x": 5.171245574951172,
+            "y": 3.758697986602783,
+            "z": 0.504500060081482
+          },
+          "orientation": {
+            "x": -0.41588232794304447,
+            "y": 0.9091227841504746,
+            "z": -0.00966432245248532,
+            "w": -0.021077322284812697
+          }
+        }
+      }
+    },
+    "error_code": null,
+    "error_message": null
+  },
+  "move": {
+    "command_id": "curobo-smoke-move",
+    "status": "succeeded",
+    "feedback": {
+      "command_id": "curobo-smoke-move",
+      "status": "succeeded",
+      "progress": 1.0,
+      "phase": "completed",
+      "metrics": {
+        "max_velocity_rad_s": 0.013283788226544857,
+        "elapsed_sim_s": 3.5666666666666664,
+        "step_count": 249,
+        "stable_steps": 3,
+        "motion_mode": "curobo",
+        "plan_only": false,
+        "torso_used": true,
+        "planning_wall_s": 33.26889706682414,
+        "trajectory_points": 62,
+        "trajectory_index": 62,
+        "trajectory_duration_s": 2.033333333333333,
+        "eef_pose_window_duration_s": 0.06666666666666667,
+        "eef_pose_window_position_range_m": 1.461225828186424e-06,
+        "eef_pose_window_orientation_range_rad": 2.636452979398117e-06,
+        "settled_by": "velocity",
+        "position_error_m": 2.9513571948627663e-06,
+        "orientation_error_rad": 1.4431664992023125e-05,
+        "command_timeout_sim_s": 30.0
+      },
+      "timestamp": "2026-09-24 03:34:57.493615+00:00"
+    },
+    "output": {
+      "target": {
+        "axis": "right",
+        "target": {
+          "frame_id": "world",
+          "position": [
+            5.171245574951172,
+            3.758697986602783,
+            0.504500060081482
+          ],
+          "orientation_xyzw": [
+            -0.41588232794304447,
+            0.9091227841504748,
+            -0.009664322452485321,
+            -0.0210773222848127
+          ]
+        },
+        "motion_mode": "curobo",
+        "use_torso": true,
+        "plan_only": false,
+        "approach_offset": [
+          0.0009085591799084362,
+          0.0010531044956127067,
+          0.029967740841410188
+        ],
+        "attached_object_ref": null
+      },
+      "joint_names": [
+        "torso_joint1",
+        "torso_joint2",
+        "torso_joint3",
+        "torso_joint4",
+        "left_arm_joint1",
+        "right_arm_joint1",
+        "left_arm_joint2",
+        "right_arm_joint2",
+        "left_arm_joint3",
+        "right_arm_joint3",
+        "left_arm_joint4",
+        "right_arm_joint4",
+        "left_arm_joint5",
+        "right_arm_joint5",
+        "left_arm_joint6",
+        "right_arm_joint6",
+        "left_arm_joint7",
+        "right_arm_joint7"
+      ],
+      "positions": [
+        0.8678751587867737,
+        -1.1948145627975464,
+        -0.3904878795146942,
+        0.005981252994388342,
+        0.00024085943005047739,
+        -0.015603081323206425,
+        5.5636974138906226e-06,
+        -0.00011224418267374858,
+        -0.00017544876027386636,
+        -0.0032226366456598043,
+        5.344348755897954e-05,
+        -0.005128137767314911,
+        -5.733914804295637e-05,
+        -0.0031113040167838335,
+        9.279498044634238e-06,
+        0.0034036263823509216,
+        -1.1074905160057824e-05,
+        1.0756131132438895e-06
+      ],
+      "target_positions": [
+        0.8678751587867737,
+        -1.1948145627975464,
+        -0.3904878795146942,
+        0.005981252994388342,
+        0.00024085943005047739,
+        -0.015603081323206425,
+        5.5636974138906226e-06,
+        -0.00011224418267374858,
+        -0.00017544876027386636,
+        -0.0032226366456598043,
+        5.344348755897954e-05,
+        -0.005128137767314911,
+        -5.733914804295637e-05,
+        -0.0031113040167838335,
+        9.279498044634238e-06,
+        0.0034036263823509216,
+        -1.1074905160057824e-05,
+        1.0756131132438895e-06
+      ],
+      "eef_pose": {
+        "header": {
+          "frame_id": "world"
+        },
+        "pose": {
+          "position": {
+            "x": 5.171247482299805,
+            "y": 3.7586958408355713,
+            "z": 0.5044993758201599
+          },
+          "orientation": {
+            "x": -0.4158764066748855,
+            "y": 0.9091254813508973,
+            "z": -0.009661704030546652,
+            "w": -0.02107901812017372
+          }
+        }
+      },
+      "target_eef_pose": {
+        "header": {
+          "frame_id": "world"
+        },
+        "pose": {
+          "position": {
+            "x": 5.171245574951172,
+            "y": 3.758697986602783,
+            "z": 0.504500060081482
+          },
+          "orientation": {
+            "x": -0.41588232794304447,
+            "y": 0.9091227841504746,
+            "z": -0.00966432245248532,
+            "w": -0.021077322284812697
+          }
+        }
+      }
+    },
+    "error_code": null,
+    "error_message": null
+  },
+  "steps": 249
+}

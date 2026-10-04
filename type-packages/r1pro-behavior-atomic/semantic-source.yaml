@@ -1,0 +1,72 @@
+schema_version: 1
+kind: robot_base
+name: r1pro-behavior-atomic
+version: 0.1.28
+robot_models:
+- r1pro
+bundle_manifest: robot/bundle.yaml
+python:
+  executable: robot/python/venv/bin/python
+  version: '3.11'
+  requirements: requirements.lock
+  wheels: []
+  import_modules:
+  - r1pro_behavior_abilities.entrypoint
+  - galaxea_r1pro
+  - semantic_robot_skill_sdk
+abilities:
+- role: arm
+  template: r1pro-arm
+  ability_name: R1ProArm.V2
+  package: abilities/arm.zip
+- role: end_effector
+  template: r1pro-end-effector
+  ability_name: R1ProEndEffector.V2
+  package: abilities/end_effector.zip
+- role: gripper
+  template: r1pro-gripper
+  ability_name: R1ProGripper.V2
+  package: abilities/gripper.zip
+- role: navigation
+  template: r1pro-navigation
+  ability_name: R1ProNavigation.V2
+  package: abilities/navigation.zip
+- role: object_perception
+  template: r1pro-object-perception
+  ability_name: R1ProObjectPerception.V2
+  package: abilities/object_perception.zip
+- role: robot_state
+  template: r1pro-robot-state
+  ability_name: R1ProRobotState.V2
+  package: abilities/robot_state.zip
+- role: sensor_capture
+  template: r1pro-sensor-capture
+  ability_name: R1ProSensorCapture.V2
+  package: abilities/sensor_capture.zip
+- role: torso
+  template: r1pro-torso
+  ability_name: R1ProTorso.V2
+  package: abilities/torso.zip
+build:
+  requirements_lock: requirements.lock
+  python_projects:
+  - ../../../semantic-ability/r1pro-behavior-ability
+  - ../../../semantic-robotsdk/robot-sdk/packages/core
+  - ../../../semantic-robotsdk/robot-sdk/packages/r1pro
+  - ../../../semantic-skill/robot-skill
+  - ../../../semantic-ability/ability-runtime/ability_py-0.4.0-py3-none-any.whl
+  ability_directories:
+    arm: ../../../semantic-ability/r1pro-behavior-ability/src/r1pro_behavior_abilities/pkginfos/r1pro-arm
+    end_effector: ../../../semantic-ability/r1pro-behavior-ability/src/r1pro_behavior_abilities/pkginfos/r1pro-end-effector
+    gripper: ../../../semantic-ability/r1pro-behavior-ability/src/r1pro_behavior_abilities/pkginfos/r1pro-gripper
+    navigation: ../../../semantic-ability/r1pro-behavior-ability/src/r1pro_behavior_abilities/pkginfos/r1pro-navigation
+    object_perception: ../../../semantic-ability/r1pro-behavior-ability/src/r1pro_behavior_abilities/pkginfos/r1pro-object-perception
+    robot_state: ../../../semantic-ability/r1pro-behavior-ability/src/r1pro_behavior_abilities/pkginfos/r1pro-robot-state
+    sensor_capture: ../../../semantic-ability/r1pro-behavior-ability/src/r1pro_behavior_abilities/pkginfos/r1pro-sensor-capture
+    torso: ../../../semantic-ability/r1pro-behavior-ability/src/r1pro_behavior_abilities/pkginfos/r1pro-torso
+  files:
+    robot/bundle.yaml: bundle.yaml
+    robot/templates: templates
+    robot/bin/semantic-robot-instance: ../../.output/bin/semantic-robot-instance
+    robot/bin/semantic-pilot: ../../.output/bin/semantic-pilot
+    robot/bin/AbilityFramework: ../../../semantic-ability/ability-runtime/AbilityFramework

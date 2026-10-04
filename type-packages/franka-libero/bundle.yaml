@@ -1,0 +1,41 @@
+apiVersion: semantic.insightos.cn/v1alpha1
+kind: RobotRuntimeBundle
+metadata:
+  name: franka-libero
+  version: 0.1.0
+  description: LIBERO 原生 Franka 与固定 SmolVLA 模型的受管运行包
+spec:
+  robot:
+    model: franka_panda
+    sdkPackage: semantic-robot-sdk-franka
+    backendProfiles:
+      - backend: mujoco
+        profile: libero-robosuite-1.4
+  platform:
+    os: linux
+    arch: amd64
+  artifacts:
+    instanceLauncher: bin/semantic-robot-instance
+    abilityFramework: bin/AbilityFramework
+    pilot: bin/semantic-pilot
+    robotSkillSDK: wheels/semantic_robot_skill_sdk-0.1.0.dev0-py3-none-any.whl
+    pythonExecutable: python/venv/bin/python
+    # 构建脚本从 Franka uv.lock 的完整 wheel 集合生成最终清单，下面是本地产品制品。
+    pythonWheels:
+      - wheels/ability_py-0.4.0-py3-none-any.whl
+      - wheels/semantic_robot_sdk_core-0.5.0.dev0-py3-none-any.whl
+      - wheels/semantic_robot_sdk_franka-0.5.0.dev0-py3-none-any.whl
+      - wheels/semantic_franka_abilities-0.1.0-py3-none-any.whl
+      - wheels/semantic_robot_skill_sdk-0.1.0.dev0-py3-none-any.whl
+    abilities:
+      - role: vla
+        template: franka-vla
+        abilityName: FrankaVLA.V2
+        file: abilities/franka-vla.zip
+  templates:
+    robotDeployment: templates/robot-deployment.yaml.tmpl
+    abilityFramework: templates/ability-framework.yaml.tmpl
+    modelRegistry: templates/smolvla-libero.json
+  runtime:
+    readinessTimeout: 110s
+    shutdownTimeout: 30s

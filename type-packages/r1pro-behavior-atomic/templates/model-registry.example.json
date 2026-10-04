@@ -1,0 +1,52 @@
+{
+  "defaults": {
+    "object_perception": "sam31-default"
+  },
+  "profiles": {
+    "sam31-default": {
+      "ability_role": "object_perception",
+      "provider": "sam31",
+      "enabled": true,
+      "settings": {
+        "python_executable": "/opt/semantic/envs/sam31/bin/python",
+        "source_path": "/opt/semantic/perception/sam3",
+        "checkpoint_path": "/opt/semantic/models/sam3.1_multiplex.pt",
+        "gpu_id": "0",
+        "sensor_id": "head_camera",
+        "startup_timeout_seconds": 300,
+        "timeout_seconds": 60,
+        "minimum_depth_points": 32
+      }
+    },
+    "sam31-left-wrist": {
+      "ability_role": "object_perception",
+      "provider": "sam31",
+      "enabled": true,
+      "settings": {
+        "python_executable": "/opt/semantic/envs/sam31/bin/python",
+        "source_path": "/opt/semantic/perception/sam3",
+        "checkpoint_path": "/opt/semantic/models/sam3.1_multiplex.pt",
+        "gpu_id": "0",
+        "sensor_id": "robot_r1:left_realsense_link:Camera:0",
+        "startup_timeout_seconds": 300,
+        "timeout_seconds": 60,
+        "minimum_depth_points": 32
+      }
+    },
+    "sam31-right-wrist": {
+      "ability_role": "object_perception",
+      "provider": "sam31",
+      "enabled": true,
+      "settings": {
+        "python_executable": "/opt/semantic/envs/sam31/bin/python",
+        "source_path": "/opt/semantic/perception/sam3",
+        "checkpoint_path": "/opt/semantic/models/sam3.1_multiplex.pt",
+        "gpu_id": "0",
+        "sensor_id": "robot_r1:right_realsense_link:Camera:0",
+        "startup_timeout_seconds": 300,
+        "timeout_seconds": 60,
+        "minimum_depth_points": 32
+      }
+    }
+  }
+}

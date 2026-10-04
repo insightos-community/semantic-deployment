@@ -1,0 +1,11 @@
+{
+  "asset_relative_root": "omnigibson-robot-assets/models/r1pro",
+  "files": {
+    "r1pro.yaml": "63f841cffd5c499102416a797a22fa5b4cbaf146539df7dde8a4a1053e2326f1",
+    "urdf/r1pro.urdf": "b0d76760cbedfbcbe1ddc280380dd5f497bbca380313bc096d7239a2c50dae61",
+    "usd/r1pro.usda": "484b22b074294c1342e9362b81b269e12435763054ce9c392e649f0d8c5032d3",
+    "curobo/r1pro_description_curobo_default.yaml": "b6ef9d5f22f24cecbfcf8146366b44f57d12573310455fc5abfac5979ac2e8eb",
+    "curobo/r1pro_description_curobo_arm.yaml": "27370ab23de78ac95efa376fa03bcbf0a87a30fca57fc506a18be4741cac9785"
+  },
+  "note": "External licensed assets. Preserve relative mesh and USD dependencies when transferring the robot directory."
+}

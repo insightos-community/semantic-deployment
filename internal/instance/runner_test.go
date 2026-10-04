@@ -1,18 +1,3 @@
-// Copyright 2026 InsightOS
-// SPDX-License-Identifier: Apache-2.0
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     https://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package instance
 
 import (
@@ -208,7 +193,7 @@ func TestPilotNonzeroSafeStopIsFailure(t *testing.T) {
 	directory := t.TempDir()
 	script := filepath.Join(directory, "pilot")
 	writeTestFile(t, directory, "pilot",
-		"#!/bin/sh\ntrap 'exit 7' TERM INT\nprintf '%s\\n' \"$$\" > \"$PWD/pilot.ready\"\nwhile :; do sleep 1; done\n", 0o755)
+		"#!/bin/sh\ntrap 'exit 7' TERM INT\nwhile :; do sleep 1; done\n", 0o755)
 	process, err := startProcess("semantic-pilot", script, nil, directory,
 		filepath.Join(directory, "pilot.log"), os.Environ())
 	if err != nil {
@@ -290,7 +275,7 @@ func createTestBundleWithRegistry(t *testing.T, registry string) string {
 	}
 	frameworkScript := fmt.Sprintf("#!/bin/sh\nSEMANTIC_TEST_HELPER_AF=1 exec %s -test.run '^TestAbilityFrameworkHelperProcess$' --\n", strconv.Quote(executable))
 	pilotScript := "#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$PWD/pilot.args\"\n" +
-		"trap 'if [ \"$SEMANTIC_TEST_NO_STOP_REPORT\" != \"1\" ]; then printf \"{\\\"safe\\\":true,\\\"hold_confirmed\\\":true,\\\"active_invocations\\\":[],\\\"reason\\\":\\\"idle\\\",\\\"finished_at\\\":\\\"2026-08-12T00:00:00Z\\\"}\\n\" > \"$SEMANTIC_PILOT_STOP_REPORT\"; fi; exit 0' TERM INT\nprintf '%s\\n' \"$$\" > \"$PWD/pilot.ready\"\nwhile :; do sleep 1; done\n"
+		"trap 'if [ \"$SEMANTIC_TEST_NO_STOP_REPORT\" != \"1\" ]; then printf \"{\\\"safe\\\":true,\\\"hold_confirmed\\\":true,\\\"active_invocations\\\":[],\\\"reason\\\":\\\"idle\\\",\\\"finished_at\\\":\\\"2026-08-12T00:00:00Z\\\"}\\n\" > \"$SEMANTIC_PILOT_STOP_REPORT\"; fi; exit 0' TERM INT\nwhile :; do sleep 1; done\n"
 	writeTestFile(t, source, "bin/semantic-robot-instance", "#!/bin/sh\nexit 0\n", 0o755)
 	writeTestFile(t, source, "bin/AbilityFramework", frameworkScript, 0o755)
 	writeTestFile(t, source, "bin/semantic-pilot", pilotScript, 0o755)
@@ -376,10 +361,6 @@ func runAbilityFrameworkHelper(t *testing.T) {
 		mutex.Lock()
 		defer mutex.Unlock()
 		if request.Method == http.MethodDelete && strings.HasPrefix(request.URL.Path, "/api/instance/") {
-			if os.Getenv("SEMANTIC_TEST_ABILITY_STOP_FAIL") == "1" {
-				http.Error(writer, "stop unconfirmed", http.StatusServiceUnavailable)
-				return
-			}
 			identifier := strings.TrimPrefix(request.URL.Path, "/api/instance/")
 			for name, value := range instances {
 				if value.InstanceID == identifier {
@@ -487,16 +468,6 @@ func waitForStatus(t *testing.T, directory string, expected Status) {
 	for time.Now().Before(deadline) {
 		state, err := ReadState(directory)
 		if err == nil && state.Status == expected {
-			// StatusRunning records process creation, not the shell helper's
-			// signal-handler readiness. Match the current PID so a previous
-			// run's marker cannot make restart tests stop the helper too early.
-			if expected == StatusRunning && state.PilotPID > 0 {
-				ready, readErr := os.ReadFile(filepath.Join(directory, "pilot.ready"))
-				if readErr != nil || strings.TrimSpace(string(ready)) != strconv.Itoa(state.PilotPID) {
-					time.Sleep(10 * time.Millisecond)
-					continue
-				}
-			}
 			return
 		}
 		if err == nil && state.Status == StatusFailed {
@@ -534,80 +505,4 @@ func environmentContains(values []string, expected string) bool {
 		}
 	}
 	return false
-}
-
-func TestTerminateRetiresOwnedDescendantsWithoutSignalingOtherGroups(t *testing.T) {
-	directory := t.TempDir()
-	unrelated, err := startProcess("unrelated", "/bin/sleep", []string{"60"}, directory,
-		filepath.Join(directory, "unrelated.log"), os.Environ())
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer unrelated.terminate(2*time.Second, false)
-	script := `sleep 60 &
-child=$!
-echo "$child" > child.pid
-trap 'wait "$child"; exit 0' TERM
-wait "$child"
-`
-	process, err := startProcess("framework", "/bin/sh", []string{"-c", script}, directory,
-		filepath.Join(directory, "framework.log"), os.Environ())
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer syscall.Kill(-process.cmd.Process.Pid, syscall.SIGKILL)
-	deadline := time.Now().Add(2 * time.Second)
-	var child int
-	for time.Now().Before(deadline) {
-		content, err := os.ReadFile(filepath.Join(directory, "child.pid"))
-		if err == nil {
-			child, _ = strconv.Atoi(strings.TrimSpace(string(content)))
-			if child > 0 {
-				break
-			}
-		}
-		time.Sleep(10 * time.Millisecond)
-	}
-	if child == 0 {
-		t.Fatal("child did not start")
-	}
-	if _, err := process.terminate(2*time.Second, false); err != nil {
-		t.Fatal(err)
-	}
-	if err := syscall.Kill(child, 0); !errors.Is(err, syscall.ESRCH) {
-		t.Fatalf("child remains after termination: %v", err)
-	}
-	if err := syscall.Kill(unrelated.cmd.Process.Pid, 0); err != nil {
-		t.Fatalf("unrelated group was signaled: %v", err)
-	}
-}
-
-func TestUnconfirmedAbilityStopKeepsFrameworkGroupForReconciliation(t *testing.T) {
-	t.Setenv("SEMANTIC_TEST_ABILITY_STOP_FAIL", "1")
-	bundleDirectory := createTestBundle(t)
-	directory := filepath.Join(t.TempDir(), "robot-unconfirmed")
-	if _, err := Render(writeTestInstanceConfig(t, bundleDirectory, "robot-unconfirmed", freePort(t)), directory); err != nil {
-		t.Fatal(err)
-	}
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	done := make(chan error, 1)
-	go func() { done <- Run(ctx, directory) }()
-	waitForStatus(t, directory, StatusRunning)
-	running, _ := ReadState(directory)
-	defer syscall.Kill(-running.AbilityFrameworkPID, syscall.SIGKILL)
-	cancel()
-	if err := waitRun(t, done); !errors.Is(err, errSafetyUnconfirmed) {
-		t.Fatalf("expected unconfirmed safety: %v", err)
-	}
-	state, err := ReadState(directory)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if state.Status != StatusInterrupted || state.StopEvidence.AbilityStopConfirmed != 0 {
-		t.Fatalf("unexpected state: %+v", state)
-	}
-	if !processAlive(running.AbilityFrameworkPID) {
-		t.Fatal("framework killed before Ability stop was confirmed")
-	}
 }

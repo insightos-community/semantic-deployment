@@ -46,31 +46,31 @@ spec:
     abilities:
       - role: navigation
         template: r1pro-navigation
-        abilityName: R1ProNavigation.V1
+        abilityName: R1ProNavigation.V2
         file: abilities/r1pro-navigation.zip
       - role: manipulator_motion
         template: r1pro-manipulator-motion
-        abilityName: R1ProManipulatorMotion.V1
+        abilityName: R1ProManipulatorMotion.V2
         file: abilities/r1pro-manipulator-motion.zip
       - role: end_effector
         template: r1pro-end-effector
-        abilityName: R1ProEndEffector.V1
+        abilityName: R1ProEndEffector.V2
         file: abilities/r1pro-end-effector.zip
       - role: robot_state
         template: r1pro-robot-state
-        abilityName: R1ProRobotState.V1
+        abilityName: R1ProRobotState.V2
         file: abilities/r1pro-robot-state.zip
       - role: sensor_capture
         template: r1pro-sensor-capture
-        abilityName: R1ProSensorCapture.V1
+        abilityName: R1ProSensorCapture.V2
         file: abilities/r1pro-sensor-capture.zip
       - role: object_perception
         template: r1pro-object-perception
-        abilityName: R1ProObjectPerception.V1
+        abilityName: R1ProObjectPerception.V2
         file: abilities/r1pro-object-perception.zip
       - role: grasp_planning
         template: r1pro-grasp-planning
-        abilityName: R1ProGraspPlanning.V1
+        abilityName: R1ProGraspPlanning.V2
         file: abilities/r1pro-grasp-planning.zip
   templates:
     robotDeployment: templates/robot-deployment.yaml.tmpl

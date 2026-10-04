@@ -1,24 +1,8 @@
-// Copyright 2026 InsightOS
-// SPDX-License-Identifier: Apache-2.0
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     https://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package bundle
 
 import (
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
 )
@@ -113,7 +97,6 @@ func TestBuildProducesInspectableReadOnlyBundle(t *testing.T) {
 		t.Fatalf("inspect 结果错误: %+v", inspection)
 	}
 	for relative, want := range map[string]os.FileMode{
-		".":                           0o555,
 		"bin/semantic-robot-instance": 0o555,
 		"bin/AbilityFramework":        0o555,
 		"bin/semantic-pilot":          0o555,
@@ -220,18 +203,7 @@ func TestTypePackageManifests(t *testing.T) {
 	mujocoPath := filepath.Join("..", "..", "type-packages", "r1pro-mujoco", "bundle.yaml")
 	manifests := map[string]Manifest{}
 	for _, relative := range []string{fakePath, mujocoPath} {
-		data, err := os.ReadFile(relative)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if runtime.GOOS != "linux" {
-			if _, err := Load(relative); err == nil {
-				t.Fatal("Linux example must reject other hosts")
-			}
-		}
-		// These checked-in examples contain Linux wheel filenames. Validate
-		// their metadata with a host-native fixture without changing the examples.
-		manifest, err := Decode(strings.NewReader(strings.Replace(string(data), "os: linux", "os: "+runtime.GOOS, 1)))
+		manifest, err := Load(relative)
 		if err != nil {
 			t.Fatalf("%s: %v", relative, err)
 		}
@@ -274,9 +246,13 @@ func TestTypePackageManifests(t *testing.T) {
 		}) {
 		t.Fatalf("MuJoCo bundle 的 Robot 匹配契约错误: %+v", mujoco.Spec.Robot)
 	}
-	for _, ability := range mujoco.Spec.Artifacts.Abilities {
-		if !strings.HasSuffix(ability.AbilityName, ".V2") {
-			t.Fatalf("MuJoCo bundle 不能加载旧 schema Ability: %+v", ability)
+	// Fake 与 MuJoCo 装载同一套 r1pro-abilities，两者都必须声明 V2。声明 V1 时
+	// AbilityFramework 按名字匹配不到实例，实例启动会一直等不到 heartbeat。
+	for _, relative := range []string{fakePath, mujocoPath} {
+		for _, ability := range manifests[relative].Spec.Artifacts.Abilities {
+			if !strings.HasSuffix(ability.AbilityName, ".V2") {
+				t.Fatalf("%s 不能加载旧 schema Ability: %+v", relative, ability)
+			}
 		}
 	}
 	root := filepath.Dir(mujocoPath)

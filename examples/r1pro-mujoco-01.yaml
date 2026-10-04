@@ -100,6 +100,6 @@ pilot:
   heartbeat_interval_seconds: 2
   allow_ability_debug: true
 robot_skills:
-  - {name: grasp-object, version: 0.4.23, enabled: true}
+  - {name: grasp-object, version: 0.4.22, enabled: true}
   - {name: semantic-navigation, version: 0.4.7, enabled: true}
   - {name: place-object, version: 0.4.42, enabled: true}

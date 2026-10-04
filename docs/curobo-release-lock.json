@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-09-30",
+  "deployment_repository": "Use the same semantic-robot-deployment commit that contains this manifest; publication branch: feature/behavior-test.",
+  "repositories": [
+    {
+      "path": "semantic-framework",
+      "url": "https://github.com/insightos-community/semantic-framework.git",
+      "commit": "538ecd2542ad670e38186bedf61664085e3f8241",
+      "branch": "feature/behavior-test"
+    },
+    {
+      "path": "semantic-web",
+      "url": "https://github.com/insightos-community/semantic-web.git",
+      "commit": "5be0ac091103a456050633c4ba49d501a48b46c0",
+      "branch": "feature/behavior-isaac"
+    },
+    {
+      "path": "semantic-robotsdk/robot-sdk",
+      "url": "https://github.com/insightos-community/semantic-robotsdk/robot-sdk.git",
+      "commit": "c8900ad7d4038336f4f169764a16f6b1f69c734c",
+      "branch": "feature/behavior-test"
+    },
+    {
+      "path": "semantic-ability/r1pro-behavior-ability",
+      "url": "https://github.com/insightos-community/semantic-ability/r1pro-behavior-ability.git",
+      "commit": "80bec60838b3bc3d8ddaa211e2765a899ab41108",
+      "branch": "feature/behavior-test",
+      "note": "Same business source as local c123fe62d7df517faf72c37f07c3a6f58c6be9a8; removes two temporary test database files."
+    },
+    {
+      "path": "semantic-skill/robot-skill",
+      "url": "https://github.com/insightos-community/semantic-skill/robot-skill.git",
+      "commit": "c379432d25a40cf1050665338c68392e5cb0eaee",
+      "branch": "feature/behavior-test"
+    },
+    {
+      "path": "semantic-simulation/isaac-runtime",
+      "url": "https://github.com/insightos-community/semantic-simulation/issac-runtime.git",
+      "commit": "99c28c571ebf416637589becdd79bc7b3457fd09",
+      "branch": "feature/behavior-test"
+    },
+    {
+      "path": "semantic-ability/ability-runtime",
+      "url": "https://github.com/insightos-community/semantic-ability/ability-runtime.git",
+      "commit": "258386ea2c8e13a2cef9a3427234d6487755d54f",
+      "git_lfs_required": true,
+      "branch": "develop",
+      "note": "Pin the locally deployed artifacts at this commit. develop also contains the newer rebuilt artifacts in 84682a31db05403d6965e74e0158ce16f66166ea; they are not part of this local baseline."
+    },
+    {
+      "path": "third_party/curobo",
+      "url": "https://github.com/StanfordVL/curobo.git",
+      "commit": "78612f45cef52c3fa0298de243a54cd7ca614414"
+    },
+    {
+      "path": "third_party/sam3",
+      "url": "https://github.com/facebookresearch/sam3.git",
+      "commit": "2345a4ad109ac29c569da749c91d84f10dc08c40"
+    },
+    {
+      "path": "third_party/behavior-curobo",
+      "url": "https://github.com/StanfordVL/BEHAVIOR-1K.git",
+      "commit": "b1979916ec1549b10a4e65e630bc6504a9af1b00"
+    }
+  ],
+  "components": {
+    "robot_base": "0.1.28",
+    "runtime_source": "0.1.27",
+    "ability": "0.5.24",
+    "sdk_r1pro": "0.5.6",
+    "sdk_core": "0.5.0.dev0",
+    "skill_sdk": "0.1.0.dev0",
+    "ability_py": "0.4.0"
+  },
+  "skills": {
+    "behavior-init": "0.1.6",
+    "behavior-nav": "0.1.9",
+    "behavior-grasp": "0.1.47",
+    "behavior-upright": "0.1.1",
+    "behavior-place": "0.1.7",
+    "behavior-radio-button": "0.1.37"
+  },
+  "scope": {
+    "baseline": "Local Semantic source deployment",
+    "excluded": [
+      "performance-tracing branches",
+      "step-rgb-recording worktree",
+      "test prompts, fixtures and run records",
+      "host runtime configuration and credentials"
+    ]
+  },
+  "environment_manifest": "curobo-native-environment.json",
+  "external_assets": {
+    "robot_manifest": "curobo-assets/r1pro-assets.json",
+    "robot_patch": "curobo-assets/r1pro-gripper-mimic.patch",
+    "model": {
+      "path": "models/sam3.1_multiplex.pt",
+      "source": "https://www.modelscope.cn/models/facebook/sam3.1/files",
+      "revision": "616acbee0b9ed4177f1f389e3c13594a0a1f6398",
+      "sha256": "0567debeec80ba4ac6369540c6c248025283cb3ff2b92827509e57e2b3541cb6",
+      "size_bytes": 3502755717
+    },
+    "scene_packages": [
+      {
+        "name": "behavior-picking_up_trash-scenes-3.9.3.zip",
+        "sha256": "27ea39ad5c7ac2c8c1ca8373edf0c21480018c19eeb5e5721b4f82e907de0264"
+      },
+      {
+        "name": "behavior-turning_on_radio-scenes-3.9.3.zip",
+        "sha256": "5aa2fccea2f876dc99ffedf8ec3d7581c1c41a06b2e8ed6bc7495dc2f5dcccf2"
+      }
+    ],
+    "note": "Assets and packages are not stored in Git. Scene hashes identify the existing exported packages; a fresh export needs its own checksum. Rebuild executable components from locked sources instead of reusing historical package hashes."
+  }
+}

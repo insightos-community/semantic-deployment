@@ -1,28 +1,13 @@
-// Copyright 2026 InsightOS
-// SPDX-License-Identifier: Apache-2.0
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     https://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package instance
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	processport "insightos.cn/semantic-robot-deployment/internal/ports/process"
-	stopport "insightos.cn/semantic-robot-deployment/internal/ports/stop"
 	"os"
 	"path/filepath"
 	"strconv"
+	"syscall"
 	"time"
 )
 
@@ -45,7 +30,6 @@ type State struct {
 	RobotID             string        `json:"robot_id"`
 	Status              Status        `json:"status"`
 	Revision            int64         `json:"revision"`
-	SupervisorIdentity  string        `json:"supervisor_identity,omitempty"`
 	SupervisorPID       int           `json:"supervisor_pid,omitempty"`
 	AbilityFrameworkPID int           `json:"ability_framework_pid,omitempty"`
 	PilotPID            int           `json:"pilot_pid,omitempty"`
@@ -98,23 +82,23 @@ func InspectStatus(instanceDirectory string) (State, error) {
 		return State{}, err
 	}
 	if (state.Status == StatusStarting || state.Status == StatusRunning || state.Status == StatusStopping) &&
-		state.SupervisorPID > 0 && !supervisorAlive(state) {
+		state.SupervisorPID > 0 && !processAlive(state.SupervisorPID) {
 		state.Status = StatusFailed
 		state.Error = "supervisor 进程已退出，状态尚未完成收口"
 	}
 	return state, nil
 }
 
-func processAlive(pid int) bool { return processport.Alive(pid) }
-func supervisorAlive(state State) bool {
-	if !processAlive(state.SupervisorPID) {
+func processAlive(pid int) bool {
+	if pid <= 0 {
 		return false
 	}
-	if state.SupervisorIdentity == "" {
-		return true
+	process, err := os.FindProcess(pid)
+	if err != nil {
+		return false
 	}
-	actual, err := stopport.Identity(state.SupervisorPID)
-	return err == nil && actual == state.SupervisorIdentity
+	err = process.Signal(syscall.Signal(0))
+	return err == nil || errors.Is(err, os.ErrPermission)
 }
 
 func writePID(path string, pid int) error {

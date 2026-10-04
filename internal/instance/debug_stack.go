@@ -1,18 +1,3 @@
-// Copyright 2026 InsightOS
-// SPDX-License-Identifier: Apache-2.0
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     https://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package instance
 
 import (
@@ -24,10 +9,10 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
 
 	"insightos.cn/semantic-robot-deployment/internal/abilityframework"
 	"insightos.cn/semantic-robot-deployment/internal/bundle"
-	"insightos.cn/semantic-robot-deployment/internal/ports/filelock"
 )
 
 // RunDebugStack 只启动本地 Robot Skill 调试所需的 AbilityFramework 和七类
@@ -46,13 +31,10 @@ func RunDebugStack(ctx context.Context, instanceDirectory string, readyOutput io
 		return err
 	}
 	defer lockFile.Close()
-	if err := filelock.TryLock(lockFile); err != nil {
-		if errors.Is(err, filelock.ErrBusy) {
-			return errors.New("实例已由另一个 semantic-robot-instance 进程管理")
-		}
-		return fmt.Errorf("锁定实例失败: %w", err)
+	if err := syscall.Flock(int(lockFile.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
+		return errors.New("实例已由另一个 semantic-robot-instance 进程管理")
 	}
-	defer filelock.Unlock(lockFile)
+	defer syscall.Flock(int(lockFile.Fd()), syscall.LOCK_UN)
 
 	config, err := LoadConfig(filepath.Join(instanceDirectory, "instance.yaml"))
 	if err != nil {
@@ -60,6 +42,9 @@ func RunDebugStack(ctx context.Context, instanceDirectory string, readyOutput io
 	}
 	opened, err := bundle.Open(config.Spec.Bundle)
 	if err != nil {
+		return err
+	}
+	if err := applyComponentAbilities(config, &opened, instanceDirectory); err != nil {
 		return err
 	}
 	if err := opened.Manifest.Supports(config.Spec.Robot.Model,
@@ -119,7 +104,7 @@ func RunDebugStack(ctx context.Context, instanceDirectory string, readyOutput io
 		return err
 	}
 	for _, ability := range opened.Manifest.Spec.Artifacts.Abilities {
-		if err := client.EnsurePackage(ctx, ability.Template, opened.Path(ability.File), opened.Manifest.ReadinessTimeout()); err != nil {
+		if err := client.EnsurePackage(ctx, ability.Template, abilityPackagePath(opened, ability.File), opened.Manifest.ReadinessTimeout()); err != nil {
 			return fmt.Errorf("准备 Ability %s: %w", ability.Role, err)
 		}
 		instance, err := client.Activate(ctx, ability.Template, ability.AbilityName, opened.Manifest.ReadinessTimeout())

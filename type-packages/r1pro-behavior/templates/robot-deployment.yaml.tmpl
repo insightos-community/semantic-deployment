@@ -1,0 +1,42 @@
+api_version: 1
+robot:
+  id: {{ quote .Instance.Spec.Robot.ID }}
+  display_name: {{ quote .Instance.Spec.Robot.DisplayName }}
+  model: r1pro
+  backend: isaac
+  sdk:
+    package: {{ quote .SDKPackage }}
+    endpoint: {{ quote .Instance.Spec.Robot.SDKEndpoint }}
+    backend_profile: behavior-omnigibson
+    firmware_profile: behavior-omnigibson
+    # VLA 使用定时控制序列，不实例化 IK/运动规划器；声明为空能力提供者。
+    providers:
+      kinematics: none
+      motion: none
+    scene_instance_id: {{ quote .Instance.Spec.Robot.SceneInstanceID }}
+    options: {{ json .SDKOptions }}
+  frames:
+    world: world
+    base: base_link
+    end_effectors:
+      # 与上游 r1pro.yaml 的 eef_link_names 一致，夹爪壳体不是工具末端坐标系。
+      left: left_eef_link
+      right: right_eef_link
+ability_framework:
+  endpoint: {{ quote .Instance.Spec.AbilityFramework.Endpoint }}
+  managed_by_instance: {{ .Instance.Spec.AbilityFramework.Managed }}
+abilities:
+  vla:
+    # 模板只传绑定路径。相机、动作及权重修订属于可独立更换的模型组件。
+    model_config: {{ quote .ModelRegistryPath }}
+    execution_database: {{ quote (printf "%s/executions/r1pro-vla.sqlite" .InstanceDirectory) }}
+pilot:
+  id: {{ quote .Instance.Spec.Pilot.ID }}
+  robot_skill_directory: {{ quote .SkillDirectory }}
+  worker_timeout_seconds: 30
+  heartbeat_interval_seconds: 2
+  allow_ability_debug: true
+robot_skills:
+  - name: vla-manipulation
+    version: 0.1.10
+    enabled: true

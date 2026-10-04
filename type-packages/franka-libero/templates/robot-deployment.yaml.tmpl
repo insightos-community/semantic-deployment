@@ -1,0 +1,39 @@
+api_version: 1
+robot:
+  id: {{ quote .Instance.Spec.Robot.ID }}
+  display_name: {{ quote .Instance.Spec.Robot.DisplayName }}
+  model: franka_panda
+  backend: mujoco
+  sdk:
+    package: {{ quote .SDKPackage }}
+    endpoint: {{ quote .Instance.Spec.Robot.SDKEndpoint }}
+    backend_profile: libero-robosuite-1.4
+    firmware_profile: libero-robosuite-1.4
+    providers:
+      kinematics: local
+      motion: local
+    scene_instance_id: {{ quote .Instance.Spec.Robot.SceneInstanceID }}
+    options: {{ json .SDKOptions }}
+  frames:
+    world: world
+    base: panda_link0
+    end_effectors:
+      hand: panda_hand
+ability_framework:
+  endpoint: {{ quote .Instance.Spec.AbilityFramework.Endpoint }}
+  managed_by_instance: {{ .Instance.Spec.AbilityFramework.Managed }}
+abilities:
+  vla:
+    # 模型与控制器在部署时绑定，不让 Agent 选择权重或拼装模型动作。
+    model_config: {{ quote .ModelRegistryPath }}
+    execution_database: {{ quote (printf "%s/executions/franka-vla.sqlite" .InstanceDirectory) }}
+pilot:
+  id: {{ quote .Instance.Spec.Pilot.ID }}
+  robot_skill_directory: {{ quote .SkillDirectory }}
+  worker_timeout_seconds: 30
+  heartbeat_interval_seconds: 2
+  allow_ability_debug: true
+robot_skills:
+  - name: vla-manipulation
+    version: 0.1.7
+    enabled: true

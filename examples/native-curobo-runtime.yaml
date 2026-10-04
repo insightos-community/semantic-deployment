@@ -1,0 +1,37 @@
+# Replace /opt/semantic and /data with this machine's actual paths.
+schema_version: 1
+installation_id: local-native-behavior
+development: true
+enabled: true
+installed_version: 0.1.26
+profile:
+  runtime_profile_id: behavior-omnigibson
+  name: BEHAVIOR / OmniGibson cuRobo
+  engine: isaac
+  loader: omnigibson
+  api_version: v1
+  environment: native-development
+  scene_kinds: [behavior]
+  scene_start_timeout_seconds: 900
+  capabilities:
+    viewer: true
+    viewer_camera_modes: [free]
+    scene_reset: true
+    scene_step: false
+    scene_previews: true
+    editable_scene: false
+    native_evaluator: true
+    sensor_kinds: [rgb, depth, robot_state, contact, holding]
+    robot_models: [r1pro]
+launch_mode: process
+endpoint: http://127.0.0.1:18100
+workdir: /opt/semantic/semantic-simulation/isaac-runtime
+command: [/opt/semantic/run-native-runtime.sh]
+asset_data_mounts:
+  - kind: assets
+    source: /data/BEHAVIOR-1K/datasets
+    target: /assets
+    read_only: true
+hardware_requirements:
+  cpu: x86_64
+  gpu: NVIDIA

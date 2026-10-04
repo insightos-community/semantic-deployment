@@ -1,0 +1,26 @@
+{
+  "captured_at": "2026-09-30",
+  "python": "3.11.16",
+  "isaacsim": "5.1.0.0",
+  "omnigibson": "3.9.2",
+  "torch": "2.7.0+cu128",
+  "warp-lang": "1.12.0",
+  "numpy": "1.26.0",
+  "scipy": "1.15.3",
+  "trimesh": "4.5.1",
+  "nvidia-curobo": "0.0.post1.dev63",
+  "omnigibson_commit": "b1979916ec1549b10a4e65e630bc6504a9af1b00",
+  "curobo_commit": "78612f45cef52c3fa0298de243a54cd7ca614414",
+  "cuda_build_toolkit": "12.8",
+  "sam31_environment": {
+    "python": "3.12.14",
+    "packages": {
+      "sam3": "0.1.0",
+      "torch": "2.10.0+cu128",
+      "torchvision": "0.25.0+cu128",
+      "numpy": "1.26.4"
+    }
+  },
+  "robot_worker_requirements": "../type-packages/r1pro-behavior-atomic/requirements.lock",
+  "note": "Observed local core package versions, not a complete transitive environment lock or minimum hardware requirements. Native venv inherits an existing Isaac/BEHAVIOR Python environment and overlays the locked OmniGibson, cuRobo, SDK and Runtime sources. SAM uses a separate Python environment. Native NumPy and the isolated Robot/Ability worker NumPy need not match. Match source commits even when package version strings are identical. Host paths, ports, GPU choices and runtime options are excluded."
+}
