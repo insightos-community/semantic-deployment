@@ -3,6 +3,7 @@ package bundle
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -203,7 +204,18 @@ func TestTypePackageManifests(t *testing.T) {
 	mujocoPath := filepath.Join("..", "..", "type-packages", "r1pro-mujoco", "bundle.yaml")
 	manifests := map[string]Manifest{}
 	for _, relative := range []string{fakePath, mujocoPath} {
-		manifest, err := Load(relative)
+		data, err := os.ReadFile(relative)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if runtime.GOOS != "linux" {
+			if _, err := Load(relative); err == nil {
+				t.Fatal("Linux example must reject other hosts")
+			}
+		}
+		// These checked-in examples contain Linux wheel filenames. Validate
+		// their metadata with a host-native fixture without changing the examples.
+		manifest, err := Decode(strings.NewReader(strings.Replace(string(data), "os: linux", "os: "+runtime.GOOS, 1)))
 		if err != nil {
 			t.Fatalf("%s: %v", relative, err)
 		}

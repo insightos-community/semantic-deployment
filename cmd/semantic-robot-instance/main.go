@@ -1,3 +1,18 @@
+// Copyright 2026 InsightOS
+// SPDX-License-Identifier: Apache-2.0
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package main
 
 import (
@@ -5,9 +20,8 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	stopport "insightos.cn/semantic-robot-deployment/internal/ports/stop"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"insightos.cn/semantic-robot-deployment/internal/instance"
@@ -54,7 +68,10 @@ func debugStack(arguments []string) error {
 	if *directory == "" {
 		return fmt.Errorf("debug-stack 需要 --instance")
 	}
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, cancel, err := stopport.NotifyContext(context.Background())
+	if err != nil {
+		return err
+	}
 	defer cancel()
 	return instance.RunDebugStack(ctx, *directory, os.Stdout)
 }
@@ -73,7 +90,10 @@ func start(arguments []string) error {
 	if *config == "" {
 		return fmt.Errorf("start 需要 --config")
 	}
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, cancel, err := stopport.NotifyContext(context.Background())
+	if err != nil {
+		return err
+	}
 	defer cancel()
 	return instance.Start(ctx, instance.StartOptions{
 		DeploymentPath: *config, DataDirectory: *dataDirectory, BundleDirectory: *bundleDirectory,
@@ -107,7 +127,10 @@ func run(arguments []string) error {
 	if *directory == "" {
 		return fmt.Errorf("run 需要 --instance")
 	}
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, cancel, err := stopport.NotifyContext(context.Background())
+	if err != nil {
+		return err
+	}
 	defer cancel()
 	return instance.Run(ctx, *directory)
 }
