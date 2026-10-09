@@ -3,3 +3,7 @@
 /.output/
 /.go/
 *.test
+
+# Python bytecode caches (CI scripts and tooling)
+__pycache__/
+*.pyc
