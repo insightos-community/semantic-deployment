@@ -84,8 +84,8 @@ ZIPs that have each passed their own tests. Third-party dependency versions are 
 the three concrete Robot Skills.
 
 ~~~bash
-git clone <semantic-robot-deployment-url>
-cd semantic-robot-deployment
+git clone https://github.com/insightos-community/semantic-deployment.git
+cd semantic-deployment
 make verify
 
 export DEPLOY_ROOT="$PWD"

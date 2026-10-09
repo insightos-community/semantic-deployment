@@ -57,8 +57,8 @@ failed，不会仅因进程消失而报告 stopped。
 三个具体 Robot Skill。
 
 ~~~bash
-git clone <semantic-robot-deployment-url>
-cd semantic-robot-deployment
+git clone https://github.com/insightos-community/semantic-deployment.git
+cd semantic-deployment
 make verify
 
 export DEPLOY_ROOT="$PWD"
